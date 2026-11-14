@@ -185,6 +185,60 @@ def add_shape_keys(m, head_ob, rig, tgt):
     drive("pupil", "pupil", ["pupil"])
 
 
+def add_identity_keys(m, head_ob, rig, n=20):
+    """Face-shape sliders: the first n of GNM's 170 head identity components as shape keys ID_00..ID_nn
+    (slider = identity coefficient, typical range -3..3). Eyeballs are rigid, so instead of deforming them the
+    eye bones are driven to follow the identity's eye-joint offsets, and the eyes stay seated in their sockets."""
+    head_ids = [i for i, nm in enumerate(m.id_names) if nm.startswith("head_")][:n]
+    eye = (m.groups["left_eye"] > 0.5) | (m.groups["right_eye"] > 0.5)
+    key = head_ob.data.shape_keys
+    basis = np.empty(len(head_ob.data.vertices) * 3)
+    key.key_blocks["Basis"].data.foreach_get("co", basis)
+    basis = basis.reshape(-1, 3)
+    names = []
+    for j, k in enumerate(head_ids):
+        d = G.to_blender(m.B_id[k].astype(np.float64))
+        d[eye] = 0.0
+        sk = head_ob.shape_key_add(name=f"ID_{j:02d}", from_mix=False)
+        sk.data.foreach_set("co", (basis + d).reshape(-1).astype(np.float32))
+        sk.slider_min, sk.slider_max = -3.0, 3.0
+        sk.value = 0.0                    # new keys default to 1.0 in Blender 5.x
+        names.append((sk.name, k))
+    # eye bones follow the eye-joint offsets (pose location is in each bone's rest frame). Blender truncates driver
+    # expressions at 256 characters, so each sum is split into partial sums on helper properties of the rig.
+    chunk = 6
+    for bname, jidx in (("eye.L", 2), ("eye.R", 3)):
+        pb = rig.pose.bones[bname]
+        to_local = rig.data.bones[bname].matrix_local.to_3x3().inverted()
+        coeffs = [to_local @ Vector(G.to_blender(m.J_id[k][jidx].astype(np.float64))) for _, k in names]
+        for ch in range(3):
+            parts = []
+            for c0 in range(0, len(names), chunk):
+                prop = f"_id_{bname[-1]}{'xyz'[ch]}{c0 // chunk}"
+                rig[prop] = 0.0
+                fc = rig.driver_add(f'["{prop}"]')
+                drv = fc.driver
+                drv.type = "SCRIPTED"
+                terms = []
+                for j in range(c0, min(c0 + chunk, len(names))):
+                    v = drv.variables.new()
+                    v.name, v.type = f"k{j}", "SINGLE_PROP"
+                    v.targets[0].id_type, v.targets[0].id = "KEY", key
+                    v.targets[0].data_path = f'key_blocks["{names[j][0]}"].value'
+                    terms.append(f"k{j}*({coeffs[j][ch]:.5g})")
+                drv.expression = "+".join(terms)
+                parts.append(prop)
+            fc = pb.driver_add("location", ch)
+            drv = fc.driver
+            drv.type = "SUM"
+            for prop in parts:
+                v = drv.variables.new()
+                v.name, v.type = prop.strip("_"), "SINGLE_PROP"
+                v.targets[0].id_type, v.targets[0].id = "OBJECT", rig
+                v.targets[0].data_path = f'["{prop}"]'
+    return [nm for nm, _ in names]
+
+
 def make_lashes(m, head_ob, eye_centers, seed=7):
     """Eyelashes: tapered, curled 3-sided strands rooted on GNM's eyelid margins, bound to the head surface
     with Surface Deform so they follow blinks, lid-follow and the head rig."""
@@ -312,6 +366,7 @@ def main():
     ap.add_argument("--identity", default="zeros")
     ap.add_argument("--out", default=os.path.join(HERE, "out", "gnm_head.blend"))
     ap.add_argument("--no-save", action="store_true")
+    ap.add_argument("--id-keys", type=int, default=20, help="number of identity (face-shape) shape keys")
     a = ap.parse_args(argv())
     clear()
     m = G.GNM()
@@ -321,6 +376,7 @@ def main():
     rest, tgt, mid = make_gaze(rig, jb)
     add_controls(rig)
     add_shape_keys(m, head_ob, rig, tgt)
+    add_identity_keys(m, head_ob, rig, n=a.id_keys)
     sub = head_ob.modifiers.new("Subdivision", "SUBSURF")
     sub.levels, sub.render_levels = 1, 1       # equal levels: Surface Deform (lashes) needs a stable target
     sub.uv_smooth = "PRESERVE_BOUNDARIES"

@@ -5,7 +5,7 @@ Team Rocklef: Sree Rohith Balaji and Thackshanaramana, SRM Institute of Science 
 
 Everything is built on **Google's GNM v3 head model** and wraps directly onto GNM's topology and UV layout.
 
-![eyes](renders_textures/sheet_eyes.png)
+![eyes](renders_textures/extra/eyes/sheet_eyes.png)
 
 ## Deliverables (one per rubric item)
 
@@ -13,10 +13,18 @@ Everything is built on **Google's GNM v3 head model** and wraps directly onto GN
 |---|---|---|---|---|
 | 1 | **Texture photorealism** | 60 | 8 textured UV sets on **GNM's UV layout**, covering face and eyes | [`textures/`](textures/) |
 | | | | Python script that renders with the generated textures | [`render_textures.py`](render_textures.py) |
-| | | | Renders with different textures (8 sets × portrait / both eyes / macro) | [`renders_textures/`](renders_textures/) |
-| 2 | **Kinematic accuracy** | 20 | Python script with 3 inputs (Left / Right / Generate Motion) that renders frames and makes a video | [`eyes_cli.py`](eyes_cli.py) |
-| | | | A video for each input, each 15 s or less | [`renders_eyes_cli/`](renders_eyes_cli/) |
+| | | | 8 rendered images, one per texture set (extra close-ups in `renders_textures/extra/`) | [`renders_textures/`](renders_textures/) |
+| 2 | **Kinematic accuracy** | 20 | Python script with the 3 inputs **"Left" / "Right" / "Generate Motion"** that renders frames and makes a video | [`eyes_cli.py`](eyes_cli.py) |
+| | | | A video for each input, each 15 s or less: `Left.mp4` (6 s), `Right.mp4` (6 s), `Generate_Motion.mp4` (12 s) | [`renders_eyes_cli/`](renders_eyes_cli/) |
 | 3 | **Code & UV portability** | 20 | `.blend` that loads the GNM head and animates an expression on the Timeline (eyelids, iris/pupil, eyebrows, gaze) | [`gnm_expression_timeline.blend`](gnm_expression_timeline.blend) |
+
+The slide 1 deliverables and workflow are also covered:
+
+| Slide 1 item | Where |
+|---|---|
+| **Python Control Wrapper**: gaze coordinates and eyelid opening/closing | [`eyes.py`](eyes.py): `look(h, v)`, `look_at(xyz)`, `eyelids(open, left=, right=)`, `blink()`, `pupil()`, `brows()`, `identity()`, `key()`, `state()`, `render()` |
+| Face shape and expression: script parameters for identity shape keys | 20 GNM identity sliders `ID_00`–`ID_19` on every head, with `eyes.identity(ID_00=1.5)` and `build_head.py --identity`. The eyes stay seated as the face changes. |
+| Photorealistic quality audit: inspect for seams and artifacts | [`quality_audit/`](quality_audit/README.md): numeric seam check on all 8 sets (every set passes) plus renders at the seams |
 
 ## 1. Textures (GNM UV, UDIM)
 
@@ -70,18 +78,21 @@ In Blender, load `<ID>_albedo.<UDIM>.png` as a tiled image on GNM's UV map, and 
 - Clumped, curled eyelashes bound to the lids.
 
 **Faces**
-- Each set is rendered on a matching GNM identity from GNM's official semantic IdentitySampler, which we ported to
+- Each of the 8 main renders uses a matching GNM identity from GNM's official semantic IdentitySampler, which we ported to
   NumPy.
-- [`renders_textures/same_head/`](renders_textures/same_head/) shows all 8 sets on one identical head, proving the
+- [`renders_textures/extra/same_head/`](renders_textures/extra/same_head/) shows all 8 sets on one identical head, proving the
   maps are interchangeable on GNM's UVs.
 
 ## 2. Eye motion: `eyes_cli.py`
 
 ```bash
-python eyes_cli.py --input left      # both eyes move left, naturally            -> renders_eyes_cli/eyes_left.mp4
-python eyes_cli.py --input right     # both eyes move right                      -> renders_eyes_cli/eyes_right.mp4
-python eyes_cli.py --input motion    # natural sequence incl. an upward eye-roll -> renders_eyes_cli/eyes_motion.mp4
+python eyes_cli.py --input "Left"              # both eyes move left, naturally       -> renders_eyes_cli/Left.mp4
+python eyes_cli.py --input "Right"             # both eyes move right                 -> renders_eyes_cli/Right.mp4
+python eyes_cli.py --input "Generate Motion"   # glances, upward eye-roll, blinks     -> renders_eyes_cli/Generate_Motion.mp4
+python eyes_cli.py                             # no input: choose 1/2/3 from a menu
 ```
+
+Input names are case-insensitive; `Generate_Motion`, `motion`, `1/2/3` and `L/R/M` also work.
 
 Options: `--tex T01..T08`, `--res 1920x1080`, `--samples 48`, `--fps 30`, `--blender PATH` (or env `XR_BLENDER`).
 Directions are from the viewer's side.
@@ -94,6 +105,28 @@ What makes the motion look human ([`gnm_rig/motion.py`](gnm_rig/motion.py)):
 - **The head follows** large shifts by about 25%, with a lag, while the eyes counter-rotate (vestibulo-ocular
   reflex).
 - **Eyelids follow vertical gaze**, and the brows lift during the upward eye-roll.
+
+## Python Control Wrapper: `eyes.py`
+
+```bash
+blender -b --factory-startup gnm_rig/out/heads/T02.blend -P eyes.py -- --look 18 6 --eyelids 0.6 --brows 0.5 --render out.png
+blender -b --factory-startup gnm_rig/out/heads/T02.blend -P eyes.py -- --look -15 -12 --left-lid 1 --right-lid 0.15 --state
+```
+
+You can also use it inside Blender, in the Python console with a head `.blend` open:
+
+```python
+import sys; sys.path.append(r"<repo>")
+import eyes
+eyes.look(15, 5)        # gaze coordinates (deg)
+eyes.eyelids(0.6)       # 1 = open, 0 = closed
+eyes.blink(30)          # keyframed blink
+eyes.key(1)
+eyes.render("still.png")
+```
+
+`eyes.state()` returns per-eye rotation angles, lines of sight and lid openings. The lids follow vertical gaze
+automatically, coordinated with any opening you set.
 
 ## 3. Timeline expression: `gnm_expression_timeline.blend`
 

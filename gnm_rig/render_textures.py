@@ -25,6 +25,8 @@ VIEWS = {
     "front": (Vector((0.0, -0.62, -0.01)), Vector((0.0, 0.0, -0.04)), 60),
     "eyes": (Vector((0.0, -0.36, 0.005)), Vector((0.0, 0.0, 0.0)), 100),
     "macro": (Vector((0.045, -0.16, 0.012)), Vector((0.031, 0.0, 0.0)), 100),
+    "back": (Vector((0.38, 0.62, 0.10)), Vector((0.0, 0.05, -0.02)), 60),        # seam check: back of the head
+    "ear": (Vector((0.62, -0.05, 0.0)), Vector((0.06, 0.03, -0.04)), 70),        # seam check: ear / jaw
 }
 
 
@@ -60,6 +62,9 @@ def main():
         name = os.path.basename(MT.set_dir(tid))
         for v, cam in cams.items():
             bpy.context.scene.camera = cam
+            bd = bpy.data.objects.get("SET_Backdrop")
+            if bd:
+                bd.visible_camera = v != "back"          # the back view's camera sits behind the backdrop
             bpy.context.scene.render.filepath = os.path.join(a.out, f"{name}_{v}.png")
             bpy.ops.render.render(write_still=True)
             print("rendered", name, v, flush=True)
