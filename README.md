@@ -26,6 +26,35 @@ The slide 1 deliverables and workflow are also covered:
 | Face shape and expression: script parameters for identity shape keys | 20 GNM identity sliders `ID_00`–`ID_19` on every head, with `eyes.identity(ID_00=1.5)` and `build_head.py --identity`. The eyes stay seated as the face changes. |
 | Photorealistic quality audit: inspect for seams and artifacts | [`quality_audit/`](quality_audit/README.md): numeric seam check on all 8 sets (every set passes) plus renders at the seams |
 
+## Track 1 submission bundle (slides 4-7): [`bundle/`](bundle/README.md)
+
+The organisers' consolidated slides score direction (40), calibration (20), automation (20) and sequence and
+metadata (20). [`bundle/`](bundle/) is the slide-6 package built on the same GNM head (T02, with the textures
+packed in), and `python tools/make_zip.py` turns it into `dist/Rocklef.zip`:
+
+```
+blender -b bundle/scene.blend -P bundle/wrapper/eyes.py -- --sequence      # renders/ + metadata.json
+blender -b bundle/scene.blend -P bundle/wrapper/eyes.py -- --directions    # five-direction check
+python tools/check_bundle.py bundle                                        # independent checks (requirements.txt)
+```
+
+| Item | Implementation | Measured (`quality_audit/gate0/report.md`) |
+|---|---|---|
+| Wrapper | `eyes.move(h, v)`, `eyes.reset()`, `eyes.render()`; h, v in [-1, +1], clamped | runs headless from a clean unzip on Blender 5.2.4 and 5.3.0 with identical metadata |
+| Calibration | target 35 cm forward of the eye midpoint, +-5 cm; camera locked 40 cm forward | 0.3500 m and 0.4000 m in every frame; camera axis 0.000 deg off the eye midpoint |
+| Eyes | 3D rotation about each eyeball centre, both converge on the target | line-of-sight error 0.0001 deg; vergence 10.21 deg at centre (geometry predicts 10.22) |
+| Sequence | 10 clockwise frames, theta_k = 2*pi*k/10, h = sin, v = cos, 1024 x 1024 PNG, fixed lights | backdrop difference between frames 0.07 / 255 |
+| Metadata | every slide-7 field plus K[R\|t], 3D pupils, gaze vectors, vergence | metadata pupils vs pupils detected in the PNGs: mean 0.96 px, max 1.85 px |
+| Direction test | left, right, up, down, reset | 5 of 5; each direction moves both pupils 9-10 px in the 1024 frame (about 50-60 px in the eye close-ups) |
+
+`+h` moves the gaze towards the image right (the subject's left). The slides do not say whether "Right" means
+the viewer's or the subject's right; we use the viewer's (image) right and record it in the metadata units.
+
+Known limitations: the bundle packs 2048 px skin normal and roughness tiles (the full 4096 px sets are in
+`textures/`) to keep `scene.blend` under GitHub's 100 MB file limit; one identity (T02) is used for the evaluated
+sequence; tested on Windows with Blender 5.2.4 LTS and 5.3.0 (not yet on 4.2 LTS). `Dockerfile` renders the bundle
+headless on Linux with Blender 5.2.4 (not built here, since Docker is not installed on the build machine).
+
 ## 1. Textures (GNM UV, UDIM)
 
 Each set is `textures/<ID>_<name>/<ID>_{albedo,normal,roughness}.<UDIM>.png`:
@@ -139,6 +168,22 @@ Open the file in Blender and press **Play**. It is a 10.5 s expression on the Ti
 
 The rig exposes keyframeable controls on `GNM_Rig`: `blink_L`, `blink_R`, `wide`, `squint`, `brow_raise`,
 `brow_down`, `pupil` and `auto_lids`. Gaze is set by moving `GAZE_Target`; both eyes track it and converge.
+
+## Demo video: `demo/SRMIST_Rocklef_demo.mp4`
+
+A narrated walkthrough (about 2 min 45 s, 1080p): why eyes matter, the problem, related work, our textures,
+the seam audit, the three motion inputs, the Timeline expression, face-shape sliders, architecture, comparison,
+applications and next steps. Every result shown is the GNM head from this repository. The four application scenes
+(VR headset, driver monitoring, eye typing, early autism screening) reuse the characters from our earlier work in
+`legacy/` and need its rendered frames in `legacy/video/build/app_*`.
+
+```bash
+python demo/narration.py                                     # voiceover + word timings
+blender -b --factory-startup gnm_expression_timeline.blend -P demo/shots.py -- --shot timeline
+blender -b --factory-startup gnm_rig/out/heads/T05.blend    -P demo/shots.py -- --shot identity
+blender -b --factory-startup gnm_rig/out/heads/T03.blend    -P demo/shots.py -- --shot orbit
+python demo/make_demo.py                                     # -> demo/SRMIST_Rocklef_demo.mp4 + .srt
+```
 
 ## How it is built
 

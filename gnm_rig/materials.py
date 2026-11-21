@@ -3,9 +3,12 @@ One tiled image per channel feeds every region (skin 1001, eyes 1002/1004, teeth
 import glob
 import os
 
+import sys
+
 import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
 ROOT = os.path.dirname(HERE)
 TEX = os.path.join(ROOT, "textures")
 
@@ -43,7 +46,7 @@ def _tex(nt, img, uv):
     return t
 
 
-def apply(tex_id, head_name="GNM_Head", sss=1.0):
+def apply(tex_id, head_name="GNM_Head", sss=1.0, micro_k=1.0, brows3d=True, fuzz=True, heavy_hair=True, hair=True):
     d = set_dir(tex_id)
     base = os.path.join(d, f"{tex_id}_")
     alb = tiled(base + "albedo.1001.png", False)
@@ -58,22 +61,67 @@ def apply(tex_id, head_name="GNM_Head", sss=1.0):
     uv.uv_map = "UVMap"
     a, n, r = _tex(nt, alb, uv), _tex(nt, nrm, uv), _tex(nt, rgh, uv)
     nm = nt.nodes.new("ShaderNodeNormalMap")
-    nm.inputs["Strength"].default_value = 0.8
+    nm.inputs["Strength"].default_value = 0.7
     nt.links.new(n.outputs["Color"], nm.inputs["Color"])
     b = nt.nodes.new("ShaderNodeBsdfPrincipled")
     nt.links.new(a.outputs["Color"], b.inputs["Base Color"])
     nt.links.new(r.outputs["Color"], b.inputs["Roughness"])
     nt.links.new(nm.outputs["Normal"], b.inputs["Normal"])
     b.subsurface_method = "RANDOM_WALK_SKIN"
-    b.inputs["Subsurface Weight"].default_value = 0.5 * sss
+    b.inputs["Subsurface Weight"].default_value = 0.85 * sss
     b.inputs["Subsurface Radius"].default_value = (1.0, 0.36, 0.18)
     b.inputs["Subsurface Scale"].default_value = 0.0035
     b.inputs["Subsurface IOR"].default_value = 1.4
     b.inputs["Specular IOR Level"].default_value = 0.5
     b.inputs["Sheen Weight"].default_value = 0.12
     b.inputs["Sheen Roughness"].default_value = 0.35
-    b.inputs["Coat Weight"].default_value = 0.04
-    b.inputs["Coat Roughness"].default_value = 0.25
+    # oily second specular lobe (sebum film): strongest where the baked roughness is low (T-zone, lids, lips)
+    oil = nt.nodes.new("ShaderNodeMapRange")
+    oil.inputs[1].default_value, oil.inputs[2].default_value = 0.62, 0.30
+    oil.inputs[3].default_value, oil.inputs[4].default_value = 0.04, 0.22
+    nt.links.new(r.outputs["Color"], oil.inputs[0])
+    nt.links.new(oil.outputs[0], b.inputs["Coat Weight"])
+    b.inputs["Coat Roughness"].default_value = 0.30
+    b.inputs["Coat IOR"].default_value = 1.45
+    # render-time micro relief below the texel size (4K over a whole head is ~0.15 mm per texel): a fine
+    # crosshatch of skin furrows and tiny pore pits, on the undeformed surface so it never swims in animation
+    gen = nt.nodes.new("ShaderNodeTexCoord")
+    mp = nt.nodes.new("ShaderNodeMapping")
+    mp.inputs["Scale"].default_value = tuple(head.dimensions)            # generated 0..1 -> metres
+    nt.links.new(gen.outputs["Generated"], mp.inputs["Vector"])
+    cross = nt.nodes.new("ShaderNodeTexVoronoi")
+    cross.feature = "DISTANCE_TO_EDGE"
+    cross.inputs["Scale"].default_value = 2600.0                         # ~0.4 mm skin polygons
+    cross.inputs["Randomness"].default_value = 0.9
+    nt.links.new(mp.outputs["Vector"], cross.inputs["Vector"])
+    furrow = nt.nodes.new("ShaderNodeMapRange")
+    furrow.inputs[1].default_value, furrow.inputs[2].default_value = 0.0, 0.035
+    nt.links.new(cross.outputs["Distance"], furrow.inputs[0])
+    pits = nt.nodes.new("ShaderNodeTexVoronoi")
+    pits.inputs["Scale"].default_value = 5200.0
+    nt.links.new(mp.outputs["Vector"], pits.inputs["Vector"])
+    pitm = nt.nodes.new("ShaderNodeMapRange")
+    pitm.inputs[1].default_value, pitm.inputs[2].default_value = 0.0, 0.22
+    pitm.inputs[3].default_value, pitm.inputs[4].default_value = 0.55, 1.0
+    nt.links.new(pits.outputs["Distance"], pitm.inputs[0])
+    grain = nt.nodes.new("ShaderNodeTexNoise")
+    grain.inputs["Scale"].default_value = 9000.0
+    grain.inputs["Detail"].default_value = 2.0
+    nt.links.new(mp.outputs["Vector"], grain.inputs["Vector"])
+    m1 = nt.nodes.new("ShaderNodeMath"); m1.operation = "MULTIPLY"
+    nt.links.new(furrow.outputs[0], m1.inputs[0]); nt.links.new(pitm.outputs[0], m1.inputs[1])
+    m2 = nt.nodes.new("ShaderNodeMath"); m2.operation = "MULTIPLY_ADD"
+    m2.inputs[1].default_value, m2.inputs[2].default_value = 0.12, 0.0
+    nt.links.new(grain.outputs["Fac"], m2.inputs[0])
+    micro = nt.nodes.new("ShaderNodeMath"); micro.operation = "ADD"
+    nt.links.new(m1.outputs[0], micro.inputs[0]); nt.links.new(m2.outputs[0], micro.inputs[1])
+    bump = nt.nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.06 * micro_k
+    bump.inputs["Distance"].default_value = 0.00003
+    nt.links.new(micro.outputs[0], bump.inputs["Height"])
+    nt.links.new(nm.outputs["Normal"], bump.inputs["Normal"])
+    nt.links.new(bump.outputs["Normal"], b.inputs["Normal"])
+    nt.links.new(bump.outputs["Normal"], b.inputs["Coat Normal"])
     out = nt.nodes.new("ShaderNodeOutputMaterial")
     nt.links.new(b.outputs[0], out.inputs[0])
 
@@ -85,7 +133,7 @@ def apply(tex_id, head_name="GNM_Head", sss=1.0):
         a = _tex(nt, alb, uv)
         en = _tex(nt, nrm, uv)
         enm = nt.nodes.new("ShaderNodeNormalMap")
-        enm.inputs["Strength"].default_value = 1.0
+        enm.inputs["Strength"].default_value = 1.8
         nt.links.new(en.outputs["Color"], enm.inputs["Color"])
         # lids softly shadow the eyeball: darken by ambient occlusion within ~3 mm (the "eye occlusion" look)
         ao = nt.nodes.new("ShaderNodeAmbientOcclusion")
@@ -198,4 +246,28 @@ def apply(tex_id, head_name="GNM_Head", sss=1.0):
         b.inputs["Subsurface Weight"].default_value = 0.3
         out = nt.nodes.new("ShaderNodeOutputMaterial")
         nt.links.new(b.outputs[0], out.inputs[0])
+    # 3D eyebrow hairs for this texture set (on top of the painted ones), if the strand file exists
+    if brows3d:
+        import brows3d as B3
+        B3.build(tex_id, head)
+    if fuzz:
+        import fuzz as FZ
+        from presets import BY_ID
+        # heavy_hair: ~1.6M-vertex vellus + scalp hair. Render-time detail only; skipped when saving a .blend
+        # for delivery (it would add ~400 MB) - lashes, brows, stubble and the tear line are always kept
+        if heavy_hair and bpy.data.objects.get("GNM_Fuzz") is None:   # same on every set: build once per scene
+            FZ.build(head)
+        if heavy_hair and tex_id in BY_ID:                       # vellus hair colour follows the set's pigment
+            FZ.set_colour(BY_ID[tex_id])
+        if tex_id in BY_ID:
+            FZ.build_stubble(BY_ID[tex_id], head)                # 3D beard stubble on the bearded sets
+            # head hair (real hair curves, a style per set); it replaces the 3D buzz-cut where a style exists
+            import hair as HR
+            got_hair = hair and HR.build(BY_ID[tex_id], head) is not None
+            if got_hair:
+                old = bpy.data.objects.get("GNM_Scalp")
+                if old:
+                    bpy.data.objects.remove(old, do_unlink=True)
+            elif heavy_hair:
+                FZ.build_scalp(BY_ID[tex_id], head)              # 3D buzz-cut scalp hair
     return d

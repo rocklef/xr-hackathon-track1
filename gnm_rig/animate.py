@@ -54,9 +54,10 @@ def main():
     ap.add_argument("--save-blend", default=None)
     ap.add_argument("--no-render", action="store_true")
     ap.add_argument("--fps", type=int, default=30)
+    ap.add_argument("--start", type=int, default=1, help="first frame to render (resume after an interruption)")
     a = ap.parse_args(sys.argv[sys.argv.index("--") + 1:])
 
-    MT.apply(a.tex)
+    MT.apply(a.tex, heavy_hair=not a.save_blend)          # the delivered .blend stays small enough for GitHub
     w, h = (int(v) for v in a.res.split("x"))
     S.cycles((w, h), a.samples, a.fps)
     sc = bpy.context.scene
@@ -110,6 +111,7 @@ def main():
     out = a.frames_dir or os.path.join(os.path.dirname(HERE), "renders_eyes_cli", a.input, "frames")
     os.makedirs(out, exist_ok=True)
     sc.render.filepath = os.path.join(out, "####")
+    sc.frame_start = max(1, min(a.start, sc.frame_end))
     bpy.ops.render.render(animation=True)
     print("frames", n, "->", out, flush=True)
 

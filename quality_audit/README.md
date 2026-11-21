@@ -10,14 +10,14 @@ As a baseline we take the same measurement across 4000 ordinary, non-seam edges.
 
 | Texture set | seam mean | seam p95 | baseline mean | seam/baseline | result |
 |---|---|---|---|---|---|
-| T01 fair young female | 3.72 | 12.59 | 2.21 | 1.68 | PASS |
-| T02 fair male stubble | 4.70 | 14.57 | 3.13 | 1.50 | PASS |
-| T03 olive mediterranean male | 4.13 | 12.66 | 3.16 | 1.31 | PASS |
-| T04 east asian female | 5.09 | 15.51 | 2.87 | 1.78 | PASS |
-| T05 south asian male | 3.54 | 10.40 | 2.78 | 1.27 | PASS |
-| T06 african female | 2.19 | 6.39 | 2.01 | 1.09 | PASS |
-| T07 elderly caucasian male | 3.25 | 10.34 | 2.27 | 1.43 | PASS |
-| T08 latina female | 4.10 | 13.06 | 2.56 | 1.60 | PASS |
+| T01 fair young female | 4.26 | 12.66 | 3.22 | 1.32 | PASS |
+| T02 fair male stubble | 5.14 | 15.19 | 4.03 | 1.28 | PASS |
+| T03 olive mediterranean male | 4.52 | 13.68 | 3.81 | 1.19 | PASS |
+| T04 east asian female | 5.50 | 17.34 | 3.82 | 1.44 | PASS |
+| T05 south asian male | 3.81 | 10.96 | 3.09 | 1.23 | PASS |
+| T06 african female | 2.39 | 6.70 | 1.80 | 1.33 | PASS |
+| T07 elderly caucasian male | 3.80 | 10.90 | 3.28 | 1.16 | PASS |
+| T08 latina female | 4.47 | 13.63 | 3.31 | 1.35 | PASS |
 
 Raw numbers, including the roughness maps, are in `seam_audit.json`.
 
@@ -38,4 +38,5 @@ The renders `T03_back.png`, `T03_ear.png`, `T06_back.png` and `T06_ear.png` show
 | Eyeball / eyelid intersection while blinking or looking around | none: lids are driven from GNM's own eye expression space, and the tear film is bound to the lid margins |
 | Pupil / iris artefacts | pupil is a true light trap; separate left and right iris maps |
 | Black or empty texels | none: 24-texel bake margin, and every face is covered |
-| Lashes intersecting the eyeball | lower lashes splay outward; rare contact at the inner corner only in extreme macro shots |
+| Lashes or tear line dragged across the eye | none: lashes, tear line, brows and all 3D hair are bound (Surface Deform) to a skin-only proxy of the head with the eyeballs masked out (`fix_lash_binding.py`), so they follow the lids and skin but never the rotating eyeball. An earlier binding to the full mesh let some lower lashes and the lower tear strip ride on the eyeball during eye-rolls and side glances; it was found in this audit and fixed |
+| Lash roots glowing through the skin | none: lash roots sit just under the skin surface (0.12 mm), so subsurface light never reaches buried geometry |

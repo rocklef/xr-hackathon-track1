@@ -117,7 +117,11 @@ def build_skin_material(mat, P):
 
     M = {k: t.attr(k) for k in ("m_lips", "m_red", "m_brow", "m_undereye", "m_tzone", "m_forehead", "m_crow",
                                 "m_beard", "m_scalp", "m_face", "m_ears", "m_socket", "m_margin")}
+    M.update({k: t.attr(k) for k in ("m_nose", "m_caruncle", "m_lid", "m_temple", "m_lowerface")})
     base = lin(P["base"])
+    lum = 0.2126 * base[0] + 0.7152 * base[1] + 0.0722 * base[2]
+    kv = min(max((lum - 0.12) / 0.30, 0.0), 1.0)          # veins/capillaries show through fair skin, not dark skin
+    pidx = int(P["id"][1:])
     # 1. low-frequency mottling (luminance + slight hue)
     mott = t.smooth(0.15, 0.85, noise(42, 6, 0.55))
     mott_c = t.mix((base[0] * 0.93, base[1] * 0.91, base[2] * 0.91), (base[0] * 1.05, base[1] * 1.05, base[2] * 1.03), mott)
@@ -129,6 +133,23 @@ def build_skin_material(mat, P):
     c = t.mix(mott_c, t.mix(mott_c, (1.0, 0.66, 0.62), 1.0, "MULTIPLY"), redn)
     # 3. under-eye shadow (slightly violet)
     c = t.mix(c, t.mix(c, (0.8, 0.72, 0.82), 1.0, "MULTIPLY"), t.math("MULTIPLY", M["m_undereye"], P["undereye"]))
+    # 3b. regional colour zones of real faces: golden forehead, cooler blue-grey lower face
+    c = t.mix(c, t.mix(c, (1.03, 1.0, 0.9), 1.0, "MULTIPLY"), t.math("MULTIPLY", M["m_forehead"], 0.55))
+    c = t.mix(c, t.mix(c, (0.95, 0.97, 1.0), 1.0, "MULTIPLY"), t.math("MULTIPLY", M["m_lowerface"], 0.5))
+    # 3c. veins under thin skin (temples, under the eyes, upper lids): fine blue-violet lines (fair skin)
+    vn = noise(55, 3, 0.55)
+    vline = t.math("SUBTRACT", 1.0, t.smooth(0.0, 0.035, t.math("ABSOLUTE", t.math("SUBTRACT", vn, 0.5))))
+    vmask = t.math("ADD", t.math("ADD", M["m_temple"], t.math("MULTIPLY", M["m_undereye"], 0.8)),
+                   t.math("MULTIPLY", M["m_lid"], 0.6))
+    c = t.mix(c, t.mix(c, (0.84, 0.84, 0.97), 1.0, "MULTIPLY"),
+              t.math("MULTIPLY", t.math("MULTIPLY", vline, vmask), 0.45 * kv))
+    # 3d. upper lids: thin, slightly pinker skin; fine capillaries there and on the nose wings
+    c = t.mix(c, t.mix(c, (1.0, 0.9, 0.9), 1.0, "MULTIPLY"), t.math("MULTIPLY", M["m_lid"], 0.4))
+    cn = noise(260, 3, 0.55)
+    cline = t.math("SUBTRACT", 1.0, t.smooth(0.0, 0.025, t.math("ABSOLUTE", t.math("SUBTRACT", cn, 0.5))))
+    cmask = t.math("ADD", M["m_lid"], t.math("MULTIPLY", M["m_nose"], P["red"]))
+    c = t.mix(c, t.mix(c, (1.0, 0.72, 0.74), 1.0, "MULTIPLY"),
+              t.math("MULTIPLY", t.math("MULTIPLY", cline, cmask), 0.35 * kv))
     # 4. lips: vermilion colour with fine vertical texture
     lipn = noise(220, 3, 0.6, stretched(3.0, 3.0, 0.4))
     lip_c = t.mix(lin(P["lip"]), t.mix(lin(P["lip"]), (0.8, 0.7, 0.7), 1.0, "MULTIPLY"), t.smooth(0.3, 0.7, lipn))
@@ -136,7 +157,16 @@ def build_skin_material(mat, P):
     c = t.mix(c, lip_c, t.math("POWER", M["m_lips"], 1.25))
     # 5. inner socket / mouth lining: pinker and darker
     c = t.mix(c, t.mix(c, (0.75, 0.45, 0.45), 1.0, "MULTIPLY"), t.math("MULTIPLY", M["m_socket"], 0.85))
-    c = t.mix(c, (0.62, 0.30, 0.30), t.math("MULTIPLY", M["m_margin"], 0.75))          # wet pink waterline
+    # wet pink waterline: light pink on fair skin, a deeper pink-brown on dark skin (follows the skin tone)
+    marg = t.mix(t.mix(c, (1.0, 0.62, 0.62), 1.0, "MULTIPLY"), (0.62, 0.30, 0.30), kv)
+    c = t.mix(c, marg, t.math("MULTIPLY", M["m_margin"], 0.75))
+    # caruncle (inner eye corner): pink mucosa, a little darker on darker skin
+    car = t.mix(t.mix(c, (1.0, 0.62, 0.62), 1.0, "MULTIPLY"), (0.70, 0.34, 0.34), 0.25 + 0.5 * kv)
+    c = t.mix(c, car, t.math("MULTIPLY", M["m_caruncle"], 0.85))
+    # meibomian gland openings: a row of tiny pale dots on the lid margins
+    md, _ = voronoi(5200)
+    meib = t.math("MULTIPLY", t.smooth(0.25, 0.08, md), M["m_margin"])
+    c = t.mix(c, t.mix(c, (1.25, 1.2, 1.08), 1.0, "MULTIPLY"), t.math("MULTIPLY", meib, 0.4))
     # 6. freckles (face) and age spots
     fd, fr = voronoi(520)
     fspot = t.math("MULTIPLY", t.smooth(0.42, 0.12, fd), t.smooth(1 - 0.35 * P["freckle"], 1.0, fr))
@@ -150,7 +180,25 @@ def build_skin_material(mat, P):
     pd, _ = voronoi(2400)
     pore = t.smooth(0.32, 0.0, pd)
     pore_k = t.math("MULTIPLY", t.math("MULTIPLY_ADD", t.math("ADD", M["m_tzone"], M["m_red"]), 0.35, 0.65), P["pore"])
-    c = t.mix(c, t.mix(c, (0.74, 0.66, 0.64), 1.0, "MULTIPLY"), t.math("MULTIPLY", pore, t.math("MULTIPLY", pore_k, 0.75)))
+    c = t.mix(c, t.mix(c, (0.74, 0.66, 0.64), 1.0, "MULTIPLY"), t.math("MULTIPLY", pore, t.math("MULTIPLY", pore_k, 0.95)))
+    # 7a. nose: larger open pores and sebaceous filaments (small dark dots)
+    nd, _ = voronoi(1700)
+    seb = t.math("MULTIPLY", t.smooth(0.22, 0.05, nd), M["m_nose"])
+    c = t.mix(c, t.mix(c, (0.70, 0.62, 0.58), 1.0, "MULTIPLY"), t.math("MULTIPLY", seb, 0.6))
+    # 7c. a few small moles (nevi), different on every set
+    mmap = t.n("ShaderNodeMapping")
+    t.nt.links.new(tc.outputs["Object"], mmap.inputs["Vector"])
+    mmap.inputs["Location"].default_value = (pidx * 0.37, pidx * 0.11, pidx * 0.23)
+    mold, molr = voronoi(45, (mmap, "Vector"))
+    mole = t.math("MULTIPLY", t.math("MULTIPLY", t.smooth(0.07, 0.035, mold), t.smooth(0.975, 0.99, molr)), M["m_face"])
+    c = t.mix(c, t.mix(c, (0.62, 0.48, 0.42), 1.0, "MULTIPLY"), t.math("MULTIPLY", mole, 0.8))
+    # 7b. fine speckle: the uneven melanin / capillary grain that keeps real skin from looking airbrushed
+    spk = noise(2600, 2, 0.6)
+    c = t.mix(c, t.mix(c, (0.88, 0.82, 0.82), 1.0, "MULTIPLY"), t.math("MULTIPLY", t.smooth(0.52, 0.78, spk), 0.55))
+    c = t.mix(c, t.mix(c, (1.06, 1.04, 1.03), 1.0, "MULTIPLY"), t.math("MULTIPLY", t.smooth(0.46, 0.24, spk), 0.5))
+    cap = noise(900, 3, 0.55)
+    c = t.mix(c, t.mix(c, (1.0, 0.86, 0.85), 1.0, "MULTIPLY"),
+              t.math("MULTIPLY", t.smooth(0.6, 0.8, cap), t.math("MULTIPLY_ADD", M["m_red"], 0.5, 0.15)))
     # 8. stubble / buzz-cut: hair-follicle dots + soft shadow
     hair = lin(P["hair"])
     sd, sr = voronoi(1500)
@@ -186,15 +234,29 @@ def build_skin_material(mat, P):
     c = t.mix(c, t.mix(c, lin(P["brow"]), 0.5), t.math("MULTIPLY", bden, 0.3))   # skin tint under the brow hairs
     albedo = c
     # ---- roughness
-    rough = t.math("ADD", 0.56, t.math("MULTIPLY", M["m_tzone"], -0.08))
+    rough = t.math("ADD", 0.56, t.math("MULTIPLY", M["m_tzone"], -0.12))
     rough = t.math("ADD", rough, t.math("MULTIPLY", M["m_lips"], -0.2))
     rough = t.math("ADD", rough, t.math("MULTIPLY", M["m_margin"], -0.4))
+    rough = t.math("ADD", rough, t.math("MULTIPLY", M["m_caruncle"], -0.4))            # wet inner corner
+    # thin eyelid / under-eye skin is smoother and slightly moist: tiny wet glints as in close-ups
+    rough = t.math("ADD", rough, t.math("MULTIPLY", M["m_undereye"], -0.06))
     rough = t.math("ADD", rough, t.math("MULTIPLY", scalp, 0.1))
-    rough = t.math("ADD", rough, t.math("MULTIPLY", t.math("SUBTRACT", noise(300, 3), 0.5), 0.12))
+    rough = t.math("ADD", rough, t.math("MULTIPLY", t.math("SUBTRACT", noise(300, 3), 0.5), 0.16))
     rough = t.math("ADD", rough, t.math("MULTIPLY", pore, 0.08), clamp=True)
     # ---- height for the normal map: pores, fine crosshatch, forehead lines, crow's feet
     fine = t.math("MULTIPLY", t.math("SUBTRACT", noise(700, 4, 0.7), 0.5), 0.15)
     h = t.math("SUBTRACT", fine, t.math("MULTIPLY", pore, t.math("MULTIPLY", pore_k, 0.9)))
+    h = t.math("SUBTRACT", h, t.math("MULTIPLY", seb, 0.7))                             # open nose pores
+    h = t.math("ADD", h, t.math("MULTIPLY", mole, 0.3))                                 # moles are slightly raised
+    # skin furrow crosshatch (dermatoglyphic polygons, ~0.6 mm)
+    vx = t.n("ShaderNodeTexVoronoi", _feature="DISTANCE_TO_EDGE", Scale=1600, Randomness=0.9)
+    t.nt.links.new(tc.outputs["Object"], vx.inputs["Vector"])
+    furrow = t.math("SUBTRACT", 1.0, t.smooth(0.0, 0.08, (vx, "Distance")))           # soft, shallow grooves
+    h = t.math("SUBTRACT", h, t.math("MULTIPLY", furrow, t.math("MULTIPLY_ADD", M["m_face"], 0.07, 0.03)))
+    # fine horizontal lines on the lower lid (present at every age, deeper with age)
+    ul = t.smooth(0.60, 0.72, noise(1.0, 2, 0.5, stretched(70, 70, 1150)))
+    ul = t.math("MULTIPLY", ul, t.smooth(0.5, 0.7, noise(160, 2, 0.5)))           # short broken segments
+    h = t.math("SUBTRACT", h, t.math("MULTIPLY", ul, t.math("MULTIPLY", M["m_undereye"], 0.22 + 0.6 * P["age"])))
     wav = t.n("ShaderNodeTexWave", _wave_type="BANDS", _bands_direction="Z", Scale=38, Distortion=6, Detail=3)
     t.nt.links.new(tc.outputs["Object"], wav.inputs["Vector"])
     lines = t.math("POWER", t.math("SUBTRACT", 1.0, (wav, "Fac")), 6)
@@ -232,6 +294,20 @@ def bake_object(masks):
     for o in bpy.context.scene.objects:
         o.hide_render = o is not ob
     return ob
+
+
+def save_with_retry(img, tries=8):
+    """Windows antivirus / indexers can hold a freshly written large PNG for a moment, which makes Blender's save
+    fail with 'internal error'. Wait and retry instead of aborting the whole bake."""
+    import time
+    for i in range(tries):
+        try:
+            img.save()
+            return
+        except RuntimeError as e:
+            print(f"save retry {i + 1}/{tries} for {img.filepath_raw}: {e}", flush=True)
+            time.sleep(2.0 + 2.0 * i)
+    img.save()
 
 
 def new_image(name, size, non_color):
@@ -314,7 +390,7 @@ def main():
             bake(ob, mat, t, sock, "NORMAL" if kind == "normal" else "EMIT", img)
             img.filepath_raw = os.path.join(d, f"{P['id']}_{kind}.1001.png")
             img.file_format = "PNG"
-            img.save()
+            save_with_retry(img)
             print(P["id"], kind, "baked", flush=True)
         print(P["id"], "done ->", d, flush=True)
 

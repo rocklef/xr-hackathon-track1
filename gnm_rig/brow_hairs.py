@@ -6,6 +6,10 @@ the inner end they point up, in the body they run laterally upward, upper hairs 
 mapped into UV through a piecewise-linear interpolant built from GNM's own vertex UVs (no seams cross the brows).
 
 python gnm_rig/brow_hairs.py [--ids T01,...]      (run after textures.py; rewrites <ID>_albedo.1001.png)
+python gnm_rig/brow_hairs.py --export-only        (no painting: only write the strand paths for the 3D brows)
+
+Every run also writes gnm_rig/out/brows/<ID>_brows.npz: the same hairs as UV-space polylines + thickness + shade,
+which brows3d.py turns into real 3D hair strands on any GNM head (the UV layout is shared by every identity).
 """
 import argparse
 import math
@@ -71,11 +75,12 @@ def grow(rng, n):
     return hairs
 
 
-def paint(P, m, vu, interp, size_hint=None):
+def paint(P, m, vu, interp, size_hint=None, draw=True):
     d = os.path.join(G.ROOT, "textures", f"{P['id']}_{P['name']}")
     path = os.path.join(d, f"{P['id']}_albedo.1001.png")
     im = Image.open(path).convert("RGB")
     W = im.size[0]
+    strands = []                                        # (uv polyline (k, 2), thickness, shade) for brows3d.py
     rng = np.random.default_rng(1000 + int(P["id"][1:]))
     n = int(900 * P["brow_k"])
     col = np.array(P["brow"], dtype=float)
@@ -87,9 +92,10 @@ def paint(P, m, vu, interp, size_hint=None):
         px = np.c_[uvp[:, 0] * W, (1 - uvp[:, 1]) * W]
         x0, y0 = np.floor(px[ok].min(0)).astype(int) - 8
         x1, y1 = np.ceil(px[ok].max(0)).astype(int) + 8
-        crop = im.crop((x0, y0, x1, y1)).resize(((x1 - x0) * SS, (y1 - y0) * SS), Image.BICUBIC)
-        over = Image.new("RGBA", crop.size, (0, 0, 0, 0))
-        dr = ImageDraw.Draw(over)
+        if draw:
+            crop = im.crop((x0, y0, x1, y1)).resize(((x1 - x0) * SS, (y1 - y0) * SS), Image.BICUBIC)
+            over = Image.new("RGBA", crop.size, (0, 0, 0, 0))
+            dr = ImageDraw.Draw(over)
         # px per metre (for stroke width): ~ distance of 1 mm in UV pixels at the brow
         a_ = interp([[sign * 0.03, 0.32]])[0]
         b_ = interp([[sign * 0.031, 0.32]])[0]
@@ -101,24 +107,36 @@ def paint(P, m, vu, interp, size_hint=None):
             idx += k
             if np.isnan(q).any():
                 continue
-            q = (q - [x0, y0]) * SS
             shade = rng.uniform(0.7, 1.15)
+            strands.append((uvp[idx - k: idx].copy(), th, shade))
+            if not draw:
+                continue
+            q = (q - [x0, y0]) * SS
             c = np.clip(col * shade, 0, 255).astype(int)
             for i in range(k - 1):
                 t = i / (k - 1)
                 w = max(1, int(round(0.075e-3 * ppm * th * (1 - 0.6 * t))))
                 alpha = int(235 * (1 - 0.45 * t))
                 dr.line([tuple(q[i]), tuple(q[i + 1])], fill=(*c, alpha), width=w)
-        crop = Image.alpha_composite(crop.convert("RGBA"), over).convert("RGB")
-        crop = crop.resize((x1 - x0, y1 - y0), Image.LANCZOS)
-        im.paste(crop, (x0, y0))
-    im.save(path)
+        if draw:
+            crop = Image.alpha_composite(crop.convert("RGBA"), over).convert("RGB")
+            crop = crop.resize((x1 - x0, y1 - y0), Image.LANCZOS)
+            im.paste(crop, (x0, y0))
+    if draw:
+        im.save(path)
+    od = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out", "brows")
+    os.makedirs(od, exist_ok=True)
+    k = len(strands[0][0])
+    np.savez_compressed(os.path.join(od, f"{P['id']}_brows.npz"), uv=np.stack([s_[0] for s_ in strands]).astype(np.float32),
+                        thick=np.array([s_[1] for s_ in strands], np.float32), shade=np.array([s_[2] for s_ in strands], np.float32),
+                        colour=np.array(P["brow"], np.float32))
     return path
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ids", default=",".join(p["id"] for p in PRESETS))
+    ap.add_argument("--export-only", action="store_true")
     a = ap.parse_args()
     m = G.GNM()
     vu = vertex_uv(m)
@@ -128,7 +146,7 @@ def main():
     interp = LinearNDInterpolator(T[sel][:, :2], vu[sel])
     for P in PRESETS:
         if P["id"] in a.ids.split(","):
-            print("brows ->", paint(P, m, vu, interp))
+            print("brows ->", paint(P, m, vu, interp, draw=not a.export_only))
 
 
 if __name__ == "__main__":

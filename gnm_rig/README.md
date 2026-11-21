@@ -35,8 +35,8 @@ Each set is `textures/<ID>_<name>/<ID>_{albedo,normal,roughness}.<UDIM>.png`:
 | Tile | Region | Resolution |
 |---|---|---|
 | 1001 | Skin (head, face, ears, neck, inner lids and mouth lining) | 4096² albedo, normal and roughness |
-| 1002 | Left eye: sclera, iris, pupil | 2048² |
-| 1004 | Right eye: a **separate** iris map, same colour family with a different pattern | 2048² |
+| 1002 | Left eye: sclera, iris, pupil | 4096² albedo + relief normal |
+| 1004 | Right eye: a **separate** iris map, same colour family with a different pattern | 4096² albedo + relief normal |
 | 1003, 1005 | Corneas (clear, no map needed) | — |
 | 1006, 1007 | Teeth and gums, tongue | 512² |
 
@@ -45,14 +45,29 @@ gets its texture.
 
 - **Seam-free by construction.** Every skin layer is generated in 3D on the GNM surface and baked through GNM's own
   UVs, so neighbouring texels across a UV seam come from the same 3D point.
-- **Skin layers.** Melanin base tone and mottling; haemoglobin redness on the nose, cheeks and ears; under-eye
-  shadow; vermilion lips with fine lines; pores at about 0.4 mm (stronger in the T-zone); freckles and age spots;
-  stubble and buzz-cut follicles; forehead lines and crow's feet that scale with age. Region masks come from GNM's
-  own vertex groups (`skin_masks.py`).
+- **Skin layers.** Melanin base tone and mottling; the colour zones of real faces (golden forehead, redder cheeks,
+  nose and ears, cooler blue-grey lower face); under-eye shadow; fine blue-violet veins under thin skin (temples,
+  lower and upper lids) and red capillaries on the lids and nose wings, both only where the skin is fair enough to
+  show them; vermilion lips with fine lines; pores at about 0.4 mm (stronger in the T-zone) inside a ~0.6 mm
+  crosshatch of skin furrows; larger open pores and sebaceous dots on the nose; fine melanin/capillary speckle; a few
+  small moles (different on every set); freckles and age spots; stubble and buzz-cut follicles; fine lower-lid lines
+  at every age; forehead lines and crow's feet that scale with age. Around the eyes: a pink, wet caruncle in the
+  inner corner and the row of meibomian gland openings on the lid margins. Region masks come from GNM's own vertex
+  groups (`skin_masks.py`).
+- **Render-time skin shading** (`materials.py`). Random-walk skin subsurface; an oily second specular lobe driven by
+  the baked roughness (T-zone, lids, lips); and a micro-relief below the texel size (furrow crosshatch, pore pits,
+  grain) on the undeformed surface, so it never swims in animation.
+- **3D hair** (built by `materials.apply`, bound to the skin-only proxy): real eyebrow strands placed exactly on the
+  painted brow hairs through GNM's UVs (`brows3d.py`); ~26k vellus "peach fuzz" hairs over the face, which glow at the
+  silhouette; and short 3D beard stubble on the bearded sets (`fuzz.py`).
 - **Eyebrows.** About 900 individual hairs per brow. They are grown with an anatomical flow field (upward at the
   inner end, herringbone through the body, outward at the tail) and drawn into UV space (`brow_hairs.py`).
-- **Irises.** Radial stroma fibres, collarette, crypts, pigment flecks, a limbal ring and a sclera with veins
-  (`iris.py`). They follow GNM's radial eye UV: pupil r < 0.05, iris r < 0.185.
+- **Irises and sclera** (`iris_hq.py`, 4096² per eye). Domain-warped stroma fibres with raised trabeculae, crypts,
+  contraction furrows, a zig-zag collarette with a warm golden ring on light irises, a crenellated pupillary ruff,
+  pigment flecks and a crisp dark limbal ring, plus a relief normal map. Sclera: off-white with a faint blue-grey
+  limbus, warmer canthi and yellowish pinguecula patches; two vessel layers (soft deep episcleral vessels and sharp
+  branching conjunctival vessels, slightly raised); faint conjunctival ripples in the normal map. They follow GNM's
+  radial eye UV: pupil r < 0.05, iris r < 0.185.
 
 | ID | Set | Iris |
 |---|---|---|
@@ -82,8 +97,10 @@ layout is shared.
   lids-up and lids-down from the gaze pitch.
 - **Controls.** Custom properties on `GNM_Rig`, all keyframeable: `blink_L`, `blink_R`, `wide`, `squint`,
   `brow_raise`, `brow_down`, `pupil` and `auto_lids`. Gaze is set by moving `GAZE_Target`.
-- **Eyelashes.** 140 tapered, curled strands per eye. They are rooted on GNM's lid margins and bound with Surface
-  Deform, so they ride along with blinks.
+- **Eyelashes.** About 170 upper and 40 lower tapered, curled, clumped strands per eye, with a glossy cuticle. They are rooted on GNM's lid margins and bound with Surface
+  Deform, so they ride along with blinks. The lashes and the tear line are bound to a hidden skin-only copy of
+  the head with the eyeballs masked out (`fix_lash_binding.py`), so they follow the lids but never the rotating
+  eyeball.
 
 ## Natural eye motion (`motion.py`)
 

@@ -78,6 +78,21 @@ def build(m=None):
         ring[up] = 0.6
         ring[lo] = 1.0
     out["m_margin"] = np.clip(smooth(ring, E, n, 1) * 1.6, 0, 1) * np.clip(g["eye_sockets"] + ring, 0, 1)
+    # --- extra regions for the realism pass
+    margins = X.lid_margins(m)
+    up_idx = np.concatenate([u for u, _ in margins.values()])
+    eye_y = T[up_idx, 1].mean()
+    eye_x = np.abs(T[up_idx, 0]).mean()
+    out["m_nose"] = np.clip(smooth(g["nose_region"], E, n, 6), 0, 1)
+    # caruncle + plica: the pink, wet fleshy tissue in the inner corner of each eye
+    inner = smoothstep(eye_x - 0.010, eye_x - 0.016, np.abs(x))
+    out["m_caruncle"] = np.clip(smooth(g["eye_sockets"] * inner, E, n, 2) * 1.4, 0, 1)
+    # thin upper-eyelid skin (between the lid margin and the brow): shows fine capillaries, slightly pinker
+    lid = orb * smoothstep(eye_y - 0.001, eye_y + 0.003, y) * (1 - np.clip(brow, 0, 1)) * skin
+    out["m_lid"] = np.clip(smooth(lid, E, n, 4), 0, 1)
+    # temples (visible bluish veins on fair skin) and the lower face (cooler, blue-grey cast)
+    out["m_temple"] = np.clip(smooth(g["left_temple_region"] + g["right_temple_region"], E, n, 6), 0, 1)
+    out["m_lowerface"] = np.clip(smooth(lower * front * beard_area * skin, E, n, 10), 0, 1)
     return out
 
 

@@ -149,7 +149,8 @@ def main():
           "| Eyeball / eyelid intersection while blinking or looking around | none: lids are driven from GNM's own eye expression space, and the tear film is bound to the lid margins |",
           "| Pupil / iris artefacts | pupil is a true light trap; separate left and right iris maps |",
           "| Black or empty texels | none: 24-texel bake margin, and every face is covered |",
-          "| Lashes intersecting the eyeball | lower lashes splay outward; rare contact at the inner corner only in extreme macro shots |"]
+          "| Lashes or tear line dragged across the eye | none: lashes, tear line, brows and all 3D hair are bound (Surface Deform) to a skin-only proxy of the head with the eyeballs masked out (`fix_lash_binding.py`), so they follow the lids and skin but never the rotating eyeball. An earlier binding to the full mesh let some lower lashes and the lower tear strip ride on the eyeball during eye-rolls and side glances; it was found in this audit and fixed |",
+          "| Lash roots glowing through the skin | none: lash roots sit just under the skin surface (0.12 mm), so subsurface light never reaches buried geometry |"]
     open(os.path.join(OUT, "README.md"), "w", encoding="utf-8").write("\n".join(md) + "\n")
     print("\n".join(rows))
 

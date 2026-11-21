@@ -69,6 +69,8 @@ def main():
     ap.add_argument("--fps", type=int, default=30)
     ap.add_argument("--out", default=os.path.join(ROOT, "renders_eyes_cli"))
     ap.add_argument("--blender", default=None)
+    ap.add_argument("--resume", action="store_true",
+                    help="keep already rendered frames and continue from the first missing one (after an interruption)")
     a = ap.parse_args()
     raw = a.input or " ".join(a.input_pos)
     key = normalise(raw) if raw else ask()
@@ -83,11 +85,17 @@ def main():
         subprocess.run([blender, "-b", "--factory-startup", "-P", os.path.join(HERE, "build_head.py")], check=True)
     a.out = os.path.abspath(a.out)
     frames = os.path.join(a.out, out_name, "frames")
-    shutil.rmtree(frames, ignore_errors=True)
+    start = 1
+    if a.resume and os.path.isdir(frames):
+        while os.path.exists(os.path.join(frames, f"{start:04d}.png")):
+            start += 1
+        print(f"resuming at frame {start}", flush=True)
+    else:
+        shutil.rmtree(frames, ignore_errors=True)
     os.makedirs(frames, exist_ok=True)
     cmd = [blender, "-b", "--factory-startup", head, "-P", os.path.join(HERE, "animate.py"), "--",
            "--input", motion_key, "--tex", a.tex, "--res", a.res, "--samples", str(a.samples), "--fps", str(a.fps),
-           "--frames-dir", frames]
+           "--frames-dir", frames, "--start", str(start)]
     print("rendering:", " ".join(cmd), flush=True)
     subprocess.run(cmd, check=True)
     n = len(glob.glob(os.path.join(frames, "*.png")))

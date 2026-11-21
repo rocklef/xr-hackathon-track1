@@ -89,7 +89,7 @@ def polar_layers(rng, R=640, A=6144, light=False):
     # pigment flecks / nevi (mostly light irises) and central heterochromia
     fleck_f = field(rng, (R, A), (5, 14))
     flecks = sst(2.6, 3.1, fleck_f) * sst(0.15, 0.3, rho) * (1 - sst(0.85, 0.95, rho))
-    limbal = sst(0.84, 1.0, rho)
+    limbal = sst(0.86, 0.985, rho)
     return dict(rho=rho, fine=fine, mid=mid, ridge=ridge, coll=coll_ridge, pup=pupillary, crypt=crypt,
                 crypt_rim=crypt_rim, furrow=furrow, ruff=ruff, flecks=flecks, limbal=limbal)
 
@@ -103,15 +103,19 @@ def iris_polar(palette, seed):
     base = pz * pupw + cz * (1 - pupw)
     # fibre structure: highlight on fibres/trabeculae, darker gaps
     fib = 0.55 * np.tanh(L["fine"] * 0.9) + 0.35 * np.tanh(L["mid"] * 0.8)
-    t_hi = np.clip(0.5 * L["ridge"] ** 3 + 0.25 * np.clip(fib, 0, 1), 0, 1)[..., None]
-    t_gap = np.clip(-fib * 1.2, 0, 1)[..., None] * 0.85
+    t_hi = np.clip(0.62 * L["ridge"] ** 3 + 0.34 * np.clip(fib, 0, 1), 0, 1)[..., None]
+    t_gap = np.clip(-fib * 1.45, 0, 1)[..., None] * 0.92
     col = base * (1 - t_hi) + hi * t_hi * (0.55 if not light else 0.75) + base * t_hi * (0.45 if not light else 0.25)
     col = col * (1 - t_gap) + gap * t_gap
     # broad luminance variation (depth / stroma thickness)
     lum = np.tanh(field(np.random.default_rng(seed + 7), col.shape[:2], (50, 260)) * 0.6)
     col = col * (1 + 0.22 * lum[..., None])
     # collarette ridge (lighter), crypts (dark with light rim), furrows (dark)
-    col = col * (1 + 0.25 * L["coll"][..., None])
+    col = col * (1 + 0.42 * L["coll"][..., None])
+    if light:                                   # central heterochromia: a warm golden ring around the pupil
+        gold = srgb_to_lin((176, 128, 52))
+        gz = (L["pup"] * 1.3 + 0.5 * L["coll"]).clip(0, 1)[..., None] * 0.36
+        col = col * (1 - gz) + gold * gz * (0.6 + 0.4 * np.clip(fib, 0, 1))[..., None]
     col = col * (1 - 0.15 * L["crypt_rim"][..., None]) + hi * 0.15 * L["crypt_rim"][..., None]
     col = col * (1 - 0.75 * L["crypt"][..., None]) + gap * 0.75 * L["crypt"][..., None] * 0.6
     col = col * (1 - 0.22 * L["furrow"][..., None])
@@ -123,7 +127,7 @@ def iris_polar(palette, seed):
     ruff_col = srgb_to_lin((34, 20, 12))
     col = col * (1 - L["ruff"][..., None]) + ruff_col * L["ruff"][..., None]
     lr = L["limbal"][..., None]
-    col = col * (1 - 0.75 * lr) + lim * 0.75 * lr
+    col = col * (1 - 0.9 * lr) + lim * 0.9 * lr
     # relief height (mm-ish, arbitrary units): fibres/trabeculae raised, crypts & furrows recessed, collarette ridge
     h = 0.5 * np.tanh(L["fine"]) * 0.25 + 0.6 * L["ridge"] ** 2 + 0.9 * L["coll"] - 1.4 * L["crypt"] - 0.8 * L["furrow"]
     h = h - 0.6 * L["ruff"]
@@ -163,13 +167,28 @@ def sclera(size, rng):
     col = col * (1 - (1 - sst(0.0, 0.18, s))[..., None] * 0.6) + near * (1 - sst(0.0, 0.18, s))[..., None] * 0.6
     horiz = np.abs(np.cos(th))
     warm = (sst(0.25, 1.0, s) * (0.5 + 0.5 * horiz))[..., None]
-    col = col * (1 - warm * 0.55) + far * warm * 0.55
-    col = col * (0.965 + 0.06 * blot[..., None])
+    col = col * (1 - warm * 0.32) + far * warm * 0.32
+    col = col * (0.955 + 0.08 * blot[..., None])
+    # pinguecula: soft yellowish patches beside the limbus on the nasal and temporal sides (sun-exposed conjunctiva)
+    yel = srgb_to_lin((226, 206, 160))
+    ang = np.minimum(np.abs(th), np.abs(np.pi - np.abs(th)))           # 0 on the horizontal (nasal/temporal)
+    pg = sst(0.55, 0.0, ang) * sst(0.02, 0.12, s) * sst(0.75, 0.3, s)
+    pg = pg * sst(0.35, 0.8, blot)
+    col = col * (1 - pg[..., None] * 0.28) + yel * pg[..., None] * 0.28
+    # overall off-white: real sclera is never paper white (slight grey-yellow)
+    col = col * srgb_to_lin((250, 248, 242)) / srgb_to_lin((255, 255, 255))
     return col
 
 
 def draw_vessels(img_lin, size, rng, n=34, ss=2):
-    """Branching conjunctival vessels: random walks from the outer sclera inward, mostly nasal/temporal."""
+    """Two layers: soft deep episcleral vessels, then sharp branching conjunctival vessels on top."""
+    img_lin = _vessel_layer(img_lin, size, rng, 12, ss, (168, 70, 78), 3.0, 6.5, 3.5, 0.28, 0, 0.02, 0.12)
+    img_lin = _vessel_layer(img_lin, size, rng, 26, ss, (190, 34, 36), 1.6, 3.6, 0.45, 0.88, 2, 0.022, 0.11)
+    return img_lin
+
+
+def _vessel_layer(img_lin, size, rng, n, ss, colour, w0, w1, blur, alpha, max_depth, branch_p, wiggle=0.28):
+    """Branching vessels: random walks from the outer sclera inward, mostly nasal/temporal."""
     W = size * ss
     over = Image.new("RGBA", (W, W), (0, 0, 0, 0))
     dr = ImageDraw.Draw(over)
@@ -177,29 +196,29 @@ def draw_vessels(img_lin, size, rng, n=34, ss=2):
     def walk(x, y, ang, width, length, depth):
         steps = int(length / 4) + 2
         for _ in range(steps):
-            ang += rng.normal(0, 0.28)
+            ang += rng.normal(0, wiggle)
             nx, ny = x + math.cos(ang) * 4 * ss, y + math.sin(ang) * 4 * ss
             uvr = math.hypot(nx / W - 0.5, ny / W - 0.5)
-            if uvr < SCL0 + 0.025:
+            if uvr < SCL0 + 0.010:
                 break
-            a = int(np.clip(70 + 120 * width / 3.0, 40, 190))
-            dr.line([(x, y), (nx, ny)], fill=(150, 28, 30, a), width=max(1, int(round(width * ss))))
+            a = int(255 * (0.55 + 0.45 * min(1.0, width / 2.0)))
+            dr.line([(x, y), (nx, ny)], fill=(255, 255, 255, a), width=max(2, int(round(width * ss))))
             x, y = nx, ny
-            width *= 0.985
-            if depth < 2 and rng.random() < 0.05:
-                walk(x, y, ang + rng.choice([-1, 1]) * rng.uniform(0.5, 1.0), width * 0.7, length * 0.45, depth + 1)
+            width *= 0.982
+            if depth < max_depth and rng.random() < branch_p:
+                walk(x, y, ang + rng.choice([-1, 1]) * rng.uniform(0.5, 1.1), width * 0.72, length * 0.5, depth + 1)
 
     for _ in range(n):
         side = rng.choice([0.0, math.pi])                 # temporal / nasal
-        a0 = side + rng.normal(0, 0.45)
-        r0 = rng.uniform(0.30, 0.40)
+        a0 = side + rng.normal(0, 0.5)
+        r0 = rng.uniform(0.25, 0.40)
         x, y = (0.5 + r0 * math.cos(a0)) * W, (0.5 - r0 * math.sin(a0)) * W
-        inward = math.atan2(0.5 * W - y, 0.5 * W - x) + rng.normal(0, 0.35)
-        walk(x, y, inward, rng.uniform(1.6, 4.2), rng.uniform(80, 260) * ss, 0)
+        inward = math.atan2(0.5 * W - y, 0.5 * W - x) + rng.normal(0, 0.4)
+        walk(x, y, inward, rng.uniform(w0, w1), rng.uniform(140, 380) * ss, 0)
     over = over.resize((size, size), Image.LANCZOS)
     a = np.asarray(over, dtype=np.float64) / 255.0
-    vcol = srgb_to_lin((175, 52, 50))
-    al = gaussian_filter(a[..., 3], 0.6)[..., None] * 0.7
+    vcol = srgb_to_lin(colour)
+    al = gaussian_filter(a[..., 3], blur)[..., None] * alpha
     return img_lin * (1 - al) + vcol * al
 
 
@@ -221,9 +240,16 @@ def eye_texture(palette, seed, size=4096):
     # normal map from relief (only the iris has relief)
     height = np.zeros((size, size))
     height[c0:c1, c0:c1] = h * (1 - lb[..., 0]) * (1 - pup[..., 0])
+    # conjunctiva is not mirror-smooth: faint low ripples over the sclera, plus the raised vessels themselves
+    r_all = np.hypot((np.arange(size)[None, :] + 0.5) / size - 0.5, (np.arange(size)[:, None] + 0.5) / size - 0.5)
+    scl_m = sst(SCL0, SCL0 + 0.02, r_all)
+    ripple = gaussian_filter(np.random.default_rng(seed + 5).standard_normal((size // 4, size // 4)), 2.5)
+    ripple = np.kron(ripple / (ripple.std() + 1e-9), np.ones((4, 4)))[:size, :size]
+    redness = np.clip(1.0 - out[..., 1] / np.maximum(out[..., 0], 1e-4), 0, 1)       # vessels are red
+    height = height + scl_m * (0.012 * gaussian_filter(ripple, 10) + 0.10 * gaussian_filter(redness, 1.0))
     height = gaussian_filter(height, 0.8)
     gy, gx = np.gradient(height)
-    k = 6.0
+    k = 9.0
     nx, ny = -gx * k, gy * k                       # image y is down; UV v is up
     nz = np.ones_like(nx)
     nrm = np.stack([nx, ny, nz], -1)

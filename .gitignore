@@ -18,3 +18,8 @@ legacy/video/cartoon/out/
 
 # submission zips
 dist/
+
+# demo video build products (frames, voice, stills)
+demo/build/
+_build/
+bundle/renders_eyes/

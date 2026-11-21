@@ -248,7 +248,7 @@ def make_lashes(m, head_ob, eye_centers, seed=7):
     fwd = Vector((0, -1, 0))
     for side, ec in (("left", eye_centers[0]), ("right", eye_centers[1])):
         ec = Vector(ec)
-        for upper, (count, base_len, curl) in ((True, (120, 0.0098, 0.85)), (False, (34, 0.0042, 0.25))):
+        for upper, (count, base_len, curl) in ((True, (170, 0.0098, 0.85)), (False, (40, 0.0042, 0.25))):
             idx = marg[side][0] if upper else marg[side][1]
             pts = np.array([np.array(head_ob.data.vertices[int(i)].co) for i in idx])
             seg = np.linalg.norm(np.diff(pts, axis=0), axis=1)
@@ -278,7 +278,8 @@ def make_lashes(m, head_ob, eye_centers, seed=7):
                 sweep = Vector(((1 if root.x > ec.x else -1) * 0.35 * abs(root.x - ec.x) / 0.012, 0, 0))
                 d0 = (d0 + sweep * 0.5).normalized()
                 n_seg, r0 = 7, (0.000075 if upper else 0.00005) * rng.uniform(0.75, 1.25)
-                ring_prev, p, dvec = None, root - out * 0.0004, d0.copy()
+                # roots just under the skin surface: buried deeper, they glow orange through the skin's subsurface
+                ring_prev, p, dvec = None, root - out * 0.00012, d0.copy()
                 axis_c = d0.cross(up).normalized() if d0.cross(up).length > 1e-6 else Vector((1, 0, 0))
                 for sgi in range(n_seg + 1):
                     tt = sgi / n_seg
@@ -307,7 +308,9 @@ def make_lashes(m, head_ob, eye_centers, seed=7):
     mat.use_nodes = True
     b = mat.node_tree.nodes.get("Principled BSDF")
     b.inputs["Base Color"].default_value = (0.012, 0.009, 0.008, 1)
-    b.inputs["Roughness"].default_value = 0.4
+    b.inputs["Roughness"].default_value = 0.32
+    b.inputs["Coat Weight"].default_value = 0.35          # glossy cuticle highlight, as on real lashes
+    b.inputs["Coat Roughness"].default_value = 0.16
     me.materials.append(mat)
     ob.parent = head_ob.parent
     sd = ob.modifiers.new("SurfaceDeform", "SURFACE_DEFORM")
@@ -331,7 +334,7 @@ def make_tearline(m, head_ob, eye_centers):
             n_sides, base = 8, len(verts)
             for k, p in enumerate(pts):
                 t = k / (len(pts) - 1)
-                radius = 0.00016 * max(0.0, math.sin(math.pi * min(max((t - 0.08) / 0.84, 0), 1))) ** 1.5 * (0.45 if upper else 1.0)
+                radius = 0.00026 * max(0.0, math.sin(math.pi * min(max((t - 0.06) / 0.88, 0), 1))) ** 1.2 * (0.42 if upper else 1.0)
                 inward = (ec - p).normalized()
                 c = p + inward * 0.0006 + Vector((0, 0, -0.00010 if upper else 0.00008))
                 tang = (pts[min(k + 1, len(pts) - 1)] - pts[max(k - 1, 0)]).normalized()
@@ -382,6 +385,8 @@ def main():
     sub.uv_smooth = "PRESERVE_BOUNDARIES"
     make_lashes(m, head_ob, (jb[2], jb[3]))
     make_tearline(m, head_ob, (jb[2], jb[3]))
+    import fix_lash_binding                    # bind lashes + tear line to the skin only, never the eyeballs
+    fix_lash_binding.fix(head_ob)
     bpy.context.scene["gnm_eye_mid"] = list(mid)
     bpy.context.scene["gnm_identity"] = a.identity
     if not a.no_save:

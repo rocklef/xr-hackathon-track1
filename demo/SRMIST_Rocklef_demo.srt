@@ -1,0 +1,264 @@
+1
+00:00:00,594 --> 00:00:02,269
+Watch someone's eyes, and you know what they're
+
+2
+00:00:02,269 --> 00:00:03,342
+thinking about.
+
+3
+00:00:03,342 --> 00:00:06,348
+Every glance, every blink, says something.
+
+4
+00:00:06,554 --> 00:00:08,110
+That's why machines are learning to read our
+
+5
+00:00:08,110 --> 00:00:11,224
+eyes. A headset sharpens only where you look.
+
+6
+00:00:11,224 --> 00:00:13,959
+A car warns a driver whose eyes leave the road.
+
+7
+00:00:13,959 --> 00:00:16,165
+People who can't speak type with their eyes.
+
+8
+00:00:16,165 --> 00:00:19,571
+And a child's gaze can help doctors spot autism early.
+
+9
+00:00:20,566 --> 00:00:22,476
+Every one of these systems has to learn from
+
+10
+00:00:22,476 --> 00:00:25,931
+real faces, with eyes that move like real eyes.
+
+11
+00:00:25,931 --> 00:00:27,382
+Filming people is slow
+
+12
+00:00:27,382 --> 00:00:28,856
+expensive and private.
+
+13
+00:00:28,856 --> 00:00:30,849
+And most digital eyes look dead
+
+14
+00:00:30,849 --> 00:00:33,536
+glassy, staring and robotic.
+
+15
+00:00:33,730 --> 00:00:36,832
+This is Synthetic Eyes, built on Google's GNM
+
+16
+00:00:36,832 --> 00:00:39,803
+head, by Team Rocklef from SRM Institute of
+
+17
+00:00:39,803 --> 00:00:41,524
+Science and Technology.
+
+18
+00:00:42,118 --> 00:00:44,889
+Researchers built 3D head models like FLAME and
+
+19
+00:00:44,889 --> 00:00:47,696
+GNM, and eye tools like UnityEyes.
+
+20
+00:00:47,696 --> 00:00:49,972
+But the head models come without lifelike skin
+
+21
+00:00:49,972 --> 00:00:53,119
+or eyes, and the eye tools only show the eye.
+
+22
+00:00:53,325 --> 00:00:56,403
+So we gave GNM photoreal skin, living eyes and
+
+23
+00:00:56,403 --> 00:00:57,535
+natural motion
+
+24
+00:00:57,535 --> 00:01:00,045
+all driven by one Python script.
+
+25
+00:01:00,240 --> 00:01:02,999
+Every texture is painted straight onto GNM's own
+
+26
+00:01:02,999 --> 00:01:06,537
+UV map, so it wraps onto the head with no seams.
+
+27
+00:01:06,537 --> 00:01:09,190
+Eight faces, of different ages and backgrounds
+
+28
+00:01:09,190 --> 00:01:12,138
+with pores, freckles, wrinkles, and eyebrows
+
+29
+00:01:12,138 --> 00:01:13,741
+drawn hair by hair.
+
+30
+00:01:13,935 --> 00:01:17,142
+Each eye gets its own 4K iris, with fibres
+
+31
+00:01:17,142 --> 00:01:18,947
+crypts and a ring of colour
+
+32
+00:01:18,947 --> 00:01:21,304
+and a pupil that really traps the light.
+
+33
+00:01:21,510 --> 00:01:23,149
+Then we check our own work
+
+34
+00:01:23,149 --> 00:01:25,590
+every UV seam on the head is measured against
+
+35
+00:01:25,590 --> 00:01:27,465
+the skin's natural detail.
+
+36
+00:01:27,465 --> 00:01:29,044
+All eight sets pass.
+
+37
+00:01:29,250 --> 00:01:32,080
+Type Left, Right, or Generate Motion, and the
+
+38
+00:01:32,080 --> 00:01:34,757
+script renders the frames and the video.
+
+39
+00:01:34,757 --> 00:01:37,741
+The eyes jump at real human speeds, settle
+
+40
+00:01:37,741 --> 00:01:39,274
+drift, and blink
+
+41
+00:01:39,274 --> 00:01:41,573
+fast to close, slower to open.
+
+42
+00:01:41,573 --> 00:01:43,012
+The head follows a little
+
+43
+00:01:43,012 --> 00:01:45,109
+and the eyelids follow the eyes.
+
+44
+00:01:45,316 --> 00:01:47,438
+The blend file plays a whole expression on
+
+45
+00:01:47,438 --> 00:01:48,771
+Blender's timeline
+
+46
+00:01:48,771 --> 00:01:51,919
+surprise, a suspicious squint and an eye roll
+
+47
+00:01:51,919 --> 00:01:55,420
+with eyelids, pupils and brows moving together.
+
+48
+00:01:55,615 --> 00:01:58,586
+Change the face with GNM's own shape sliders
+
+49
+00:01:58,586 --> 00:02:01,179
+and the eyes stay perfectly in place.
+
+50
+00:02:01,374 --> 00:02:02,282
+Under the hood
+
+51
+00:02:02,282 --> 00:02:05,678
+GNM rebuilt in Python, expressions solved inside
+
+52
+00:02:05,678 --> 00:02:07,482
+GNM's own eye space
+
+53
+00:02:07,482 --> 00:02:09,664
+textures baked through its UV map
+
+54
+00:02:09,664 --> 00:02:11,268
+and a control wrapper to look
+
+55
+00:02:11,268 --> 00:02:13,353
+open the eyelids and blink.
+
+56
+00:02:13,548 --> 00:02:15,163
+Compared with today's tools
+
+57
+00:02:15,163 --> 00:02:17,722
+ours gives a whole photoreal face, a separate
+
+58
+00:02:17,722 --> 00:02:20,659
+iris for each eye, human motion over time
+
+59
+00:02:20,659 --> 00:02:22,768
+and eyelids that follow the gaze.
+
+60
+00:02:22,974 --> 00:02:25,840
+That opens the door to lifelike avatars, safer
+
+61
+00:02:25,840 --> 00:02:29,341
+cars, better eye trackers, and medical research.
+
+62
+00:02:29,547 --> 00:02:32,294
+Next, we'll carry the textures over to FLAME
+
+63
+00:02:32,294 --> 00:02:34,853
+add infrared headset cameras, and run it all in
+
+64
+00:02:34,853 --> 00:02:36,019
+real time.
+
+65
+00:02:36,214 --> 00:02:38,171
+Want the code, or to build on it?
+
+66
+00:02:38,171 --> 00:02:41,201
+Email us. Thank you, from Team Rocklef.
+
