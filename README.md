@@ -92,7 +92,21 @@ In Blender, load `<ID>_albedo.<UDIM>.png` as a tiled image on GNM's UV map, and 
   - forehead lines and crow's feet that scale with age
 - **Region masks** come from GNM's own vertex groups.
 - **Eyebrows.** About 900 individual hairs per brow, grown with an anatomical flow field (upward at the inner end,
-  herringbone through the body, outward at the tail).
+  herringbone through the body, outward at the tail), painted into the albedo and also built as 3D strands.
+- **Fine detail taken from close-up reference footage:**
+  - micro-relief (cell pattern, pits and fine noise) with crosshatch furrows
+  - capillaries and veins scaled to skin tone
+  - colour zones on the forehead and lower face
+  - meibomian gland dots on the lid margins, sebaceous dots on the nose, moles
+  - an oily coat that follows the roughness map (shinier T-zone)
+  - a caruncle and lid margin that follow the skin tone
+
+**Hair (3D, per identity)**
+- Head hair as Blender hair curves with the Principled Hair BSDF (physically based melanin colour from the set's
+  hair colour): short side-parted cuts, a bun, a coily style, and salt-and-pepper for T07.
+- 3D brow strands, stubble on the male sets and fine vellus hair on the face.
+- Every strand, lash and the tear line are bound to a skin-only copy of the head with the eyeballs masked out, so
+  nothing is dragged across the eye when it rotates ([`gnm_rig/fix_lash_binding.py`](gnm_rig/fix_lash_binding.py)).
 
 **Eyes** (4K, separate for each eye)
 - Domain-warped stroma fibres with raised trabeculae, plus a matching relief normal map
@@ -185,6 +199,21 @@ blender -b --factory-startup gnm_rig/out/heads/T03.blend    -P demo/shots.py -- 
 python demo/make_demo.py                                     # -> demo/SRMIST_Rocklef_demo.mp4 + .srt
 ```
 
+## Setup and Docker
+
+Requirements: Blender 5.2 LTS (or 5.3), Python 3.10+ with `pip install -r requirements.txt`, and ffmpeg on the PATH
+(for the videos). All commands run from the repository root. Linux, without installing anything but Docker:
+
+```bash
+docker build -t rocklef-gaze .
+docker run --rm -v "$PWD/out:/out" rocklef-gaze python3 eyes_cli.py --input Left --out /out
+docker run --rm -v "$PWD/out:/out" rocklef-gaze blender -b --factory-startup gnm_rig/out/heads/T03.blend \
+    -P render_textures.py -- --tex T03 --views portrait,eyes,macro --out /out
+docker run --rm -v "$PWD/out:/out" rocklef-gaze            # Track 1 bundle: 10 frames, metadata, checks
+```
+
+Rendering runs on the CPU in Docker; add `--gpus all -e XR_CYCLES_DEVICE=CUDA` for an NVIDIA GPU.
+
 ## How it is built
 
 Full details are in [`gnm_rig/README.md`](gnm_rig/README.md).
@@ -208,3 +237,4 @@ before the rubric was released.
 - **GNM v3** head model, semantic identity decoder and UV layout: Google, Apache-2.0
   ([github.com/google/GNM](https://github.com/google/GNM)).
 - All textures, rig, expressions, motion and rendering code in this repository were written for this submission.
+- Studio lighting HDRI: Blender's bundled `interior.exr` (CC0), packed into the delivered `.blend` files.

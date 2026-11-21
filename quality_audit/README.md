@@ -27,7 +27,7 @@ Raw numbers, including the roughness maps, are in `seam_audit.json`.
 
 ## 2. Visual check at the seams
 
-The renders `T03_back.png`, `T03_ear.png`, `T06_back.png` and `T06_ear.png` show the back of the head and the ear and jaw, where GNM's UV seams run. Front-facing renders and eye close-ups under natural gaze are in `../renders_textures/` and in the three videos.
+The renders `T03_back.png`, `T03_ear.png`, `T06_back.png` and `T06_ear.png` show the back of the head and the ear and jaw, where GNM's UV seams run. They are rendered with the 3D head hair on, as the face is delivered; the hair covers the scalp seams there, so the numeric check in section 1 is the test for those, while the ear, jaw and nape seams stay visible in the renders. Front-facing renders and eye close-ups under natural gaze are in `../renders_textures/` and in the three videos.
 
 ## 3. Artifact checklist
 

@@ -1,0 +1,10 @@
+.git
+_downloads
+_build
+dist
+legacy
+demo
+renders_eyes_cli/*/frames
+bundle/renders_eyes
+**/__pycache__
+**/*.blend1

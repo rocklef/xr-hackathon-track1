@@ -104,7 +104,10 @@ def main():
             if "studiolights" in img.filepath and not img.packed_file:
                 img.pack()
         bpy.ops.file.make_paths_relative()          # textures load from ../../textures wherever the repo lives
-        bpy.ops.wm.save_mainfile()
+        for img in bpy.data.images:                  # '/' works on Windows, macOS and Linux; '\' only on Windows
+            if img.filepath.startswith("//"):
+                img.filepath = img.filepath.replace("\\", "/")
+        bpy.ops.wm.save_mainfile(relative_remap=False)
         print("saved", a.save_blend, flush=True)
     if a.no_render:
         return
