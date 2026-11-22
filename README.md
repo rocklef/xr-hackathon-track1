@@ -77,6 +77,42 @@ docker build -t rocklef-gaze .
 docker run --rm -v "$PWD/out:/out" rocklef-gaze        # renders the 10 frames + checks, copies them to ./out
 ```
 
+## Folder structure
+
+```
+xr-hackathon-track1-gaze/
+├── SRMIST_Rocklef.zip            # Track 1 submission bundle (team_name.zip, slide-6 layout)
+├── bundle/                       # the same bundle, unpacked
+│   ├── scene.blend               #   textured head, eye bones, materials, locked camera, fixed lights
+│   ├── wrapper/eyes.py           #   eyes.move(h, v) / eyes.reset() / eyes.render()
+│   ├── renders/                  #   10 clockwise frames, 1024 x 1024 PNG
+│   ├── metadata.json             #   per-frame inputs, rotations, 2D pupil centres, camera matrix
+│   ├── checks/                   #   centre / left / right / up / down / reset renders
+│   └── README.md                 #   setup and run instructions
+├── demo/
+│   ├── Project_Demo.mp4          # project demo film (2:56, 1080p) + Project_Demo.srt subtitles
+│   ├── Wrapper_Demo.mp4          # wrapper in action (1:04)
+│   ├── web/                      # 720p copy that plays in the browser
+│   ├── clips/                    # every scene of the film as its own clip
+│   └── make_demo.py, shots.py, narration.py   # how the film is built
+├── presentation/                 # SRMIST_Rocklef.pptx + .pdf, and build_ppt.py
+├── quality_audit/                # seam audit (all 8 sets) and gate0/ (22 independent checks, contact sheet)
+├── tools/                        # build_bundle, check_bundle, make_zip, contact_sheet, wrapper_demo, ...
+├── textures/                     # 8 texture sets: skin, separate left/right irises (UDIM, 4K)
+├── renders_textures/             # renders of every texture set (+ eye and macro close-ups)
+├── renders_eyes_cli/             # Left / Right / Generate Motion videos
+├── eyes_cli.py                   # one script, inputs Left / Right / Generate Motion -> frames + video
+├── eyes.py                       # full control wrapper: gaze, eyelids, blinks, pupils, brows, face shape
+├── render_textures.py            # renders the texture sets
+├── gnm_expression_timeline.blend # expression animated on the Blender Timeline
+├── gnm_rig/                      # head build, expressions, textures, irises, hair, motion model
+├── docs/                         # DETAILS.md (how everything is built) and README media
+├── legacy/                       # our earlier exploration and the demo's application scenes
+├── Dockerfile, requirements.txt  # headless setup
+├── AI_DISCLOSURE.md, LICENSE
+└── .github/workflows/            # re-runs the Track 1 checks on every push
+```
+
 ## Brownie features
 
 Beyond the required output, the head is built for photorealism:
