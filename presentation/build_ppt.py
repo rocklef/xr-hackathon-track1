@@ -403,7 +403,7 @@ play.rotation = 90
 play.fill.solid()
 play.fill.fore_color.rgb = WHITE
 play.line.fill.background()
-tb(s, 5.45, 4.5, 4.1, 0.3, [[("Demo video  ·  2:43", SEMI, 11.5, WHITE)]])
+tb(s, 5.45, 4.5, 4.1, 0.3, [[("Project demo  ·  2:56", SEMI, 11.5, WHITE)]])
 tb(s, 5.45, 4.78, 4.1, 0.3, [[(REPO, SANS, 10.5, CYAN)]])
 
 # ------------------------------------------------------------------ 8. brownie

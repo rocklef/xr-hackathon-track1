@@ -1,7 +1,7 @@
 """The Track 1 "1-2 min demo video of the wrapper in action" (slide 5), built only from the bundle's real output:
 renders/, renders_eyes/, checks/, metadata.json and the independent check report.
 
-    python tools/wrapper_demo.py            # -> demo/SRMIST_Rocklef_wrapper_demo.mp4
+    python tools/wrapper_demo.py            # -> demo/Wrapper_Demo.mp4
 """
 import json
 import math
@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 B = os.path.join(ROOT, "bundle")
-OUT = os.path.join(ROOT, "demo", "SRMIST_Rocklef_wrapper_demo.mp4")
+OUT = os.path.join(ROOT, "demo", "Wrapper_Demo.mp4")
 W, H, FPS = 1920, 1080, 30
 BG, FG, GREY, DIM = (8, 10, 16), (240, 242, 246), (140, 146, 160), (80, 86, 100)
 TEAL, ORANGE, GREEN, CYAN = (25, 211, 162), (245, 160, 0), (52, 211, 153), (0, 180, 216)

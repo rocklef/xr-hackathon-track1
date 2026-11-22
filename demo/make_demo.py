@@ -2,7 +2,7 @@
 
     python demo/narration.py                  # voiceover + word timings (edge-tts)
     blender ... -P demo/shots.py -- --shot timeline|identity|orbit   # Blender shots -> demo/build/<shot>/
-    python demo/make_demo.py                  # -> demo/SRMIST_Rocklef_demo.mp4 (+ .srt)
+    python demo/make_demo.py                  # -> demo/Project_Demo.mp4 (+ .srt)
     python demo/make_demo.py --preview 6      # every 6th frame, fast check
     python demo/make_demo.py --still apps@3,textures@9   # single frames -> demo/build/stills/
 
@@ -1617,7 +1617,7 @@ def parse_args(argv=None):
     ap.add_argument("--preview", type=int, default=0, help="render every Nth frame only")
     ap.add_argument("--still", default=None, help="comma-separated times (s) or scene@offset: write PNG stills only")
     ap.add_argument("--workers", type=int, default=max(1, min(12, (os.cpu_count() or 4) - 4)))
-    ap.add_argument("--out", default=os.path.join(OUTDIR, "SRMIST_Rocklef_demo.mp4"))
+    ap.add_argument("--out", default=os.path.join(OUTDIR, "Project_Demo.mp4"))
     return ap.parse_args(argv)
 
 

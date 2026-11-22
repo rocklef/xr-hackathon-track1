@@ -12,14 +12,14 @@ fixation target 35 cm ahead, and are rendered by a camera locked 40 cm ahead, wi
 
 ## Watch
 
-| Demo film (2:56) | Wrapper in action (1:04) |
+| Project demo (2:56) | Wrapper in action (1:04) |
 |---|---|
-| [![Demo film preview](docs/media/demo_teaser.gif)](https://github.com/rocklef/xr-hackathon-track1-gaze/raw/main/demo/SRMIST_Rocklef_demo.mp4) | [![Wrapper demo preview](docs/media/wrapper_teaser.gif)](https://github.com/rocklef/xr-hackathon-track1-gaze/raw/main/demo/SRMIST_Rocklef_wrapper_demo.mp4) |
-| [**Download the full film (MP4)**](https://github.com/rocklef/xr-hackathon-track1-gaze/raw/main/demo/SRMIST_Rocklef_demo.mp4): the problem, applications, textures, eye motion, Timeline expression, architecture and results | [**Download the wrapper demo (MP4)**](https://github.com/rocklef/xr-hackathon-track1-gaze/raw/main/demo/SRMIST_Rocklef_wrapper_demo.mp4): `eyes.move` / `eyes.reset` / `eyes.render`, the 10 clockwise frames with their metadata, the five-direction check |
+| [![Project demo preview](docs/media/demo_teaser.gif)](https://cdn.jsdelivr.net/gh/rocklef/xr-hackathon-track1-gaze@main/demo/web/Project_Demo_720p.mp4) | [![Wrapper demo preview](docs/media/wrapper_teaser.gif)](https://cdn.jsdelivr.net/gh/rocklef/xr-hackathon-track1-gaze@main/demo/Wrapper_Demo.mp4) |
+| [**▶ Play the project demo in your browser**](https://cdn.jsdelivr.net/gh/rocklef/xr-hackathon-track1-gaze@main/demo/web/Project_Demo_720p.mp4)<br>The problem, applications, textures, eye motion, Timeline expression, architecture and results.<br>Full 1080p: [`demo/Project_Demo.mp4`](https://github.com/rocklef/xr-hackathon-track1-gaze/raw/main/demo/Project_Demo.mp4) (download) | [**▶ Play the wrapper demo in your browser**](https://cdn.jsdelivr.net/gh/rocklef/xr-hackathon-track1-gaze@main/demo/Wrapper_Demo.mp4)<br>`eyes.move` / `eyes.reset` / `eyes.render`, the 10 clockwise frames with their metadata, the five-direction check.<br>File: [`demo/Wrapper_Demo.mp4`](https://github.com/rocklef/xr-hackathon-track1-gaze/raw/main/demo/Wrapper_Demo.mp4) (download) |
 
-The previews above play on this page; GitHub downloads MP4 files instead of playing them, so click to download the
-full videos. Every scene is also available on its own in [`demo/clips/`](demo/clips/). Slides:
-[`presentation/SRMIST_Rocklef.pdf`](presentation/SRMIST_Rocklef.pdf) (opens in the browser).
+Click a preview to play the video in your browser. Every scene is also available on its own in
+[`demo/clips/`](demo/clips/). Slides: [`presentation/SRMIST_Rocklef.pdf`](presentation/SRMIST_Rocklef.pdf) (opens in
+the browser).
 
 ![Ten clockwise renders and the five-direction check](quality_audit/gate0/contact_sheet.png)
 
@@ -33,7 +33,7 @@ full videos. Every scene is also available on its own in [`demo/clips/`](demo/cl
 | 10 clockwise renders, θk = 2πk/10, h = sin θk, v = cos θk, starting at the top | [`bundle/renders/`](bundle/renders/) (1024 × 1024 PNG) |
 | Per-frame JSON: inputs, eye rotations, 2D pupil centres, camera matrix | [`bundle/metadata.json`](bundle/metadata.json) |
 | README with setup instructions | [`bundle/README.md`](bundle/README.md) and this file |
-| Contact sheet or 1-2 min demo video | contact sheet [`quality_audit/gate0/contact_sheet.png`](quality_audit/gate0/contact_sheet.png); 1:04 wrapper video [`demo/SRMIST_Rocklef_wrapper_demo.mp4`](demo/SRMIST_Rocklef_wrapper_demo.mp4) (made by [`tools/wrapper_demo.py`](tools/wrapper_demo.py) from the bundle's own output) |
+| Contact sheet or 1-2 min demo video | contact sheet [`quality_audit/gate0/contact_sheet.png`](quality_audit/gate0/contact_sheet.png); 1:04 wrapper video [`demo/Wrapper_Demo.mp4`](demo/Wrapper_Demo.mp4) (made by [`tools/wrapper_demo.py`](tools/wrapper_demo.py) from the bundle's own output) |
 
 ### Measured against the evaluation (100 points)
 
@@ -117,7 +117,7 @@ How everything is built: [`docs/DETAILS.md`](docs/DETAILS.md).
 | Submission package (as per the theme slides) | [`SRMIST_Rocklef.zip`](SRMIST_Rocklef.zip) |
 | Source code | [`bundle/wrapper/`](bundle/wrapper/), [`tools/`](tools/), [`gnm_rig/`](gnm_rig/), [`eyes_cli.py`](eyes_cli.py), [`eyes.py`](eyes.py), [`render_textures.py`](render_textures.py) |
 | Presentation | [`presentation/SRMIST_Rocklef.pdf`](presentation/SRMIST_Rocklef.pdf) (view in browser) and [`.pptx`](presentation/SRMIST_Rocklef.pptx) |
-| Video | demo film [`demo/SRMIST_Rocklef_demo.mp4`](demo/SRMIST_Rocklef_demo.mp4) (2:56); wrapper demo [`demo/SRMIST_Rocklef_wrapper_demo.mp4`](demo/SRMIST_Rocklef_wrapper_demo.mp4) (1:04); every scene in [`demo/clips/`](demo/clips/) |
+| Video | demo film [`demo/Project_Demo.mp4`](demo/Project_Demo.mp4) (2:56); wrapper demo [`demo/Wrapper_Demo.mp4`](demo/Wrapper_Demo.mp4) (1:04); every scene in [`demo/clips/`](demo/clips/) |
 | AI disclosure | [`AI_DISCLOSURE.md`](AI_DISCLOSURE.md) |
 | README | this file, [`bundle/README.md`](bundle/README.md), [`docs/DETAILS.md`](docs/DETAILS.md) |
 | Docker, requirements, licence, CI | [`Dockerfile`](Dockerfile), [`requirements.txt`](requirements.txt), [`LICENSE`](LICENSE) (MIT), [`.github/workflows/track1-checks.yml`](.github/workflows/track1-checks.yml) |

@@ -130,7 +130,7 @@ Open the file in Blender and press **Play**. It is a 10.5 s expression on the Ti
 The rig exposes keyframeable controls on `GNM_Rig`: `blink_L`, `blink_R`, `wide`, `squint`, `brow_raise`,
 `brow_down`, `pupil` and `auto_lids`. Gaze is set by moving `GAZE_Target`; both eyes track it and converge.
 
-## Demo video: `demo/SRMIST_Rocklef_demo.mp4`
+## Demo video: `demo/Project_Demo.mp4`
 
 A narrated walkthrough (2 min 56 s, 1080p): why eyes matter, the problem, related work, our textures,
 the seam audit, the three motion inputs, the Timeline expression, face-shape sliders, architecture, comparison,
@@ -144,7 +144,7 @@ python demo/narration.py                                     # voiceover + word 
 blender -b --factory-startup gnm_expression_timeline.blend -P demo/shots.py -- --shot timeline
 blender -b --factory-startup gnm_rig/out/heads/T05.blend    -P demo/shots.py -- --shot identity
 blender -b --factory-startup gnm_rig/out/heads/T03.blend    -P demo/shots.py -- --shot orbit
-python demo/make_demo.py                                     # -> demo/SRMIST_Rocklef_demo.mp4 + .srt
+python demo/make_demo.py                                     # -> demo/Project_Demo.mp4 + .srt
 ```
 
 ## How it is built
