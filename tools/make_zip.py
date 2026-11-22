@@ -1,4 +1,4 @@
-"""Pack the slide-6 submission: dist/Rocklef.zip with exactly
+"""Pack the slide-6 submission: SRMIST_Rocklef.zip with exactly
 scene.blend, wrapper/eyes.py, renders/ (10 frames), metadata.json and README.md at the top level.
 
     python tools/make_zip.py
@@ -9,7 +9,7 @@ import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 B = os.path.join(ROOT, "bundle")
-OUT = os.path.join(ROOT, "dist", "Rocklef.zip")
+OUT = os.path.join(ROOT, "SRMIST_Rocklef.zip")      # team_name.zip (team name = CollegeName_TeamName)
 
 files = ["scene.blend", "wrapper/eyes.py", "metadata.json", "README.md"]
 files += sorted(os.path.relpath(p, B).replace(os.sep, "/") for p in glob.glob(os.path.join(B, "renders", "frame_*.png")))

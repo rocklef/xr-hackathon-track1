@@ -56,8 +56,8 @@ def pupil_point(side):
 
 
 def reduced_set(tex_id, px):
-    """Copy the texture set to _build/ with the skin normal and roughness tiles (1001) at px x px, so the packed
-    scene.blend stays under GitHub's 100 MB file limit. Albedo and eye tiles keep full 4096 resolution."""
+    """Copy the texture set to _build/ with the skin tiles (1001: albedo, normal, roughness) at px x px, so the packed
+    scene.blend and the zip stay under GitHub's 100 MB file limit. The eye tiles keep full 4096 resolution."""
     import glob
     import shutil
     src = MT.set_dir(tex_id)
@@ -67,7 +67,7 @@ def reduced_set(tex_id, px):
     os.makedirs(dst)
     for f in glob.glob(os.path.join(src, "*.png")):
         out = os.path.join(dst, os.path.basename(f))
-        if f.endswith((f"normal.1001.png", f"roughness.1001.png")) and px < 4096:
+        if f.endswith(("albedo.1001.png", "normal.1001.png", "roughness.1001.png")) and px < 4096:
             im = bpy.data.images.load(f)
             im.colorspace_settings.name = "Non-Color"
             im.scale(px, px)
@@ -123,6 +123,7 @@ def main(argv):
     sc.render.resolution_x = sc.render.resolution_y = 1024
     sc.render.image_settings.file_format = "PNG"
     sc.render.image_settings.color_mode = "RGB"
+    sc.render.image_settings.compression = 90           # lossless PNG, smaller files in the zip
     sc.render.film_transparent = False
 
     # calibrate the pupil point of each eye in its bone frame (moves rigidly with the eye)

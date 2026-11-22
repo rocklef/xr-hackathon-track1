@@ -182,7 +182,7 @@ python tools/check_bundle.py bundle                                        # ind
 | Calibration | target 35 cm forward of the eye midpoint, +-5 cm; camera locked 40 cm forward | 0.3500 m and 0.4000 m in every frame; camera axis 0.000 deg off the eye midpoint |
 | Eyes | 3D rotation about each eyeball centre, both converge on the target | line-of-sight error 0.0001 deg; vergence 10.21 deg at centre (geometry predicts 10.22) |
 | Sequence | 10 clockwise frames, theta_k = 2*pi*k/10, h = sin, v = cos, 1024 x 1024 PNG, fixed lights | backdrop difference between frames 0.07 / 255 |
-| Metadata | every slide-7 field plus K[R\|t], 3D pupils, gaze vectors, vergence | metadata pupils vs pupils detected in the PNGs: mean 0.96 px, max 1.85 px |
+| Metadata | every slide-7 field plus K[R\|t], 3D pupils, gaze vectors, vergence | metadata pupils vs pupils detected in the PNGs: mean 0.96 px, max 1.92 px |
 | Direction test | left, right, up, down, reset | 5 of 5; each direction moves both pupils 9-10 px in the 1024 frame (about 50-60 px in the eye close-ups) |
 
 `+h` moves the gaze towards the image right (the subject's left). The slides do not say whether "Right" means

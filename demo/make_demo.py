@@ -7,7 +7,7 @@
     python demo/make_demo.py --still apps@3,textures@9   # single frames -> demo/build/stills/
 
 Footage: renders_eyes_cli/<Left|Right|Generate_Motion>/frames (eyes_cli.py), demo/build/<shot>/ (shots.py), and the
-application scenes from our earlier character work (legacy/video/build/app_*). Stills: renders_textures/, textures/,
+application panels reuse the GNM footage above. Stills: renders_textures/, textures/,
 quality_audit/. Overlay data (gaze, blinks, controls) comes from the same motion model the renders were keyed from
 (gnm_rig/motion.py), so every on-screen number matches the picture.
 """
@@ -457,8 +457,11 @@ CLIPS = {"left": os.path.join(ROOT, "renders_eyes_cli", "Left", "frames"),
          "motion": os.path.join(ROOT, "renders_eyes_cli", "Generate_Motion", "frames"),
          "timeline": os.path.join(BUILD, "timeline"), "identity": os.path.join(BUILD, "identity"),
          "orbit": os.path.join(BUILD, "orbit"),
-         "app_vr": os.path.join(LEGACY, "app_vr"), "app_car": os.path.join(LEGACY, "app_car"),
-         "app_access": os.path.join(LEGACY, "app_access"), "app_medical": os.path.join(LEGACY, "app_medical")}
+         # application panels show our own GNM footage (the old MakeHuman app scenes are retired)
+         "app_vr": os.path.join(ROOT, "renders_eyes_cli", "Generate_Motion", "frames"),
+         "app_car": os.path.join(ROOT, "renders_eyes_cli", "Left", "frames"),
+         "app_access": os.path.join(ROOT, "renders_eyes_cli", "Right", "frames"),
+         "app_medical": os.path.join(BUILD, "identity")}
 _nframes = {}
 
 
@@ -670,15 +673,15 @@ def headline(img, t, eb, line, st=0.15, x=120, y=78, size=56, grad=None):
     reveal(img, x, y + 38, line, F(size, "semibold"), t, st + 0.12, grad=grad)
 
 
-# ------------------------------------------------------------------ applications (earlier characters)
+# ------------------------------------------------------------------ applications (our GNM footage)
 APPS = [dict(clip="app_vr", word=("headset", 0), eb="Virtual reality", head="Sharp only where you look.",
-             want=1.0, cy=0.35),
+             want=2.0, cy=0.42),
         dict(clip="app_car", word=("car", 0), eb="Driver monitoring", head="Eyes leave the road. It warns.",
-             want=3.6, cy=0.4),
+             want=0.0, cy=0.42),
         dict(clip="app_access", word=("people", 0), eb="Eye typing", head="A keyboard for the eyes.",
-             want=4.0, cy=0.5),
+             want=0.5, cy=0.42),
         dict(clip="app_medical", word=("and", 0), eb="Early screening", head="Gaze helps spot autism early.",
-             want=0.9, cy=0.4)]
+             want=0.5, cy=0.42)]
 CW, CH, CG = 800, 450, 24
 GX, GY = (W - 2 * CW - CG) // 2, 66
 ZOOM = 0.8
@@ -717,7 +720,7 @@ def draw_app(img, i, ta, rect, a, k_full):
         outline(img, (x, y, x + w - 1, y + h - 1), r, alpha=40, a=a)
         eyebrow(img, x + 26, y + h - 48, APPS[i]["eb"], col=FG, a=a * (1 - 2 * k_full), size=18)
     if APPS[i]["clip"] == "app_car":
-        off = tc >= 5.0
+        off = abs(chan("left", "gaze_h", tc)) > 10.0           # the alert follows the rendered gaze
         sz = int(lerp(18, 24, k_full))
         pill(img, x + lerp(22, 96, k_full), y + lerp(22, 80, k_full), "EYES OFF ROAD" if off else "EYES ON ROAD",
              RED if off else GREEN, a, sz, pulse=(0.35 + 0.65 * (int(tc * 4) % 2)) if off else 1.0)
