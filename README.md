@@ -115,7 +115,28 @@ xr-hackathon-track1-gaze/
 
 ## Brownie features
 
-Beyond the required output, the head is built for photorealism:
+### Synthetic Head Modeling & Texturing evaluation (100 points)
+
+| Rubric item | Points | Required output | Where |
+|---|---|---|---|
+| **Texture photorealism** | 60 | 5-10 textured UV maps, face and eyes, on the head's UV map | [`textures/`](textures/): 8 sets, each with separate left and right iris tiles |
+| | | Python script that renders with the generated textures | [`render_textures.py`](render_textures.py) |
+| | | 5-10 rendered images with different textures | [`renders_textures/`](renders_textures/): 8 images, plus eye and macro close-ups |
+| **Kinematic accuracy** | 20 | Python script taking **Left**, **Right** or **Generate Motion**, rendering the frames and making a video | [`eyes_cli.py`](eyes_cli.py) |
+| | | One video per input, each 15 s or less | [`renders_eyes_cli/`](renders_eyes_cli/): `Left.mp4` 6 s, `Right.mp4` 6 s, `Generate_Motion.mp4` 12 s |
+| **Code & UV portability** | 20 | `.blend` that loads the head and animates an expression on the Timeline (eyelids, iris, eyebrows) | [`gnm_expression_timeline.blend`](gnm_expression_timeline.blend): blink, wide, squint, pupil, brows, gaze, head; open it and press **Play** |
+
+| Workflow item (slide 1) | Where |
+|---|---|
+| Load the 3D head model | [`gnm_rig/build_head.py`](gnm_rig/build_head.py) |
+| Face shape and expression parameters | 20 identity sliders and the lid/brow expressions: `eyes.identity(...)`, `eyes.expression(...)` in [`eyes.py`](eyes.py) |
+| Eye motion: left, right, up, down | [`eyes.py`](eyes.py) `look(h, v)`; [`bundle/wrapper/eyes.py`](bundle/wrapper/eyes.py) `move(h, v)` |
+| Eyelid closure, continuous and coordinated with gaze | `eyes.eyelids(open)`, lids follow vertical gaze automatically |
+| UV layout texture transfer | textures baked through the head's own UVs ([`gnm_rig/textures.py`](gnm_rig/textures.py)) |
+| Separate left and right iris maps | UDIM tiles 1002 (left) and 1004 (right) in every set, all different |
+| Photorealistic quality audit: seams and artefacts | [`quality_audit/`](quality_audit/README.md): numeric seam check, every set passes |
+
+Beyond these, the head is built for photorealism:
 
 - **8 photoreal texture sets** on the head's UV layout (skin, separate left and right irises, teeth), seam-free by
   construction: [`textures/`](textures/), renders in [`renders_textures/`](renders_textures/), seam audit in
