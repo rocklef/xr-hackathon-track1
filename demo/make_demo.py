@@ -7,7 +7,7 @@
     python demo/make_demo.py --still apps@3,textures@9   # single frames -> demo/build/stills/
 
 Footage: renders_eyes_cli/<Left|Right|Generate_Motion>/frames (eyes_cli.py), demo/build/<shot>/ (shots.py), and the
-application panels reuse the GNM footage above. Stills: renders_textures/, textures/,
+application scenes from our earlier character work (legacy/video/build/app_*, tools/render_app_scene.py). Stills: renders_textures/, textures/,
 quality_audit/. Overlay data (gaze, blinks, controls) comes from the same motion model the renders were keyed from
 (gnm_rig/motion.py), so every on-screen number matches the picture.
 """
@@ -457,11 +457,9 @@ CLIPS = {"left": os.path.join(ROOT, "renders_eyes_cli", "Left", "frames"),
          "motion": os.path.join(ROOT, "renders_eyes_cli", "Generate_Motion", "frames"),
          "timeline": os.path.join(BUILD, "timeline"), "identity": os.path.join(BUILD, "identity"),
          "orbit": os.path.join(BUILD, "orbit"),
-         # application panels show our own GNM footage (the old MakeHuman app scenes are retired)
-         "app_vr": os.path.join(ROOT, "renders_eyes_cli", "Generate_Motion", "frames"),
-         "app_car": os.path.join(ROOT, "renders_eyes_cli", "Left", "frames"),
-         "app_access": os.path.join(ROOT, "renders_eyes_cli", "Right", "frames"),
-         "app_medical": os.path.join(BUILD, "identity")}
+         # application scenes: our character work in legacy/ (re-rendered with tools/render_app_scene.py)
+         "app_vr": os.path.join(LEGACY, "app_vr"), "app_car": os.path.join(LEGACY, "app_car"),
+         "app_access": os.path.join(LEGACY, "app_access"), "app_medical": os.path.join(LEGACY, "app_medical")}
 _nframes = {}
 
 
@@ -673,15 +671,15 @@ def headline(img, t, eb, line, st=0.15, x=120, y=78, size=56, grad=None):
     reveal(img, x, y + 38, line, F(size, "semibold"), t, st + 0.12, grad=grad)
 
 
-# ------------------------------------------------------------------ applications (our GNM footage)
+# ------------------------------------------------------------------ applications (earlier characters)
 APPS = [dict(clip="app_vr", word=("headset", 0), eb="Virtual reality", head="Sharp only where you look.",
-             want=2.0, cy=0.42),
+             want=1.0, cy=0.35),
         dict(clip="app_car", word=("car", 0), eb="Driver monitoring", head="Eyes leave the road. It warns.",
-             want=0.0, cy=0.42),
+             want=3.6, cy=0.4),
         dict(clip="app_access", word=("people", 0), eb="Eye typing", head="A keyboard for the eyes.",
-             want=0.5, cy=0.42),
+             want=4.0, cy=0.5),
         dict(clip="app_medical", word=("and", 0), eb="Early screening", head="Gaze helps spot autism early.",
-             want=0.5, cy=0.42)]
+             want=0.9, cy=0.4)]
 CW, CH, CG = 800, 450, 24
 GX, GY = (W - 2 * CW - CG) // 2, 66
 ZOOM = 0.8
@@ -720,7 +718,7 @@ def draw_app(img, i, ta, rect, a, k_full):
         outline(img, (x, y, x + w - 1, y + h - 1), r, alpha=40, a=a)
         eyebrow(img, x + 26, y + h - 48, APPS[i]["eb"], col=FG, a=a * (1 - 2 * k_full), size=18)
     if APPS[i]["clip"] == "app_car":
-        off = abs(chan("left", "gaze_h", tc)) > 10.0           # the alert follows the rendered gaze
+        off = tc >= 5.0
         sz = int(lerp(18, 24, k_full))
         pill(img, x + lerp(22, 96, k_full), y + lerp(22, 80, k_full), "EYES OFF ROAD" if off else "EYES ON ROAD",
              RED if off else GREEN, a, sz, pulse=(0.35 + 0.65 * (int(tc * 4) % 2)) if off else 1.0)
@@ -834,8 +832,8 @@ def seg_title(t, d, team):
     st = wt("title", "synthetic", 0, 0.9) - 0.3
     eyebrow(img, 112, 300, "Samsung PRISM XR Hackathon 2026  ·  Track 1", t, st - 0.2)
     reveal(img, 106, 336, "Synthetic Eyes", F(132, "semibold"), t, st, grad=GRAD, dur=1.0)
-    reveal(img, 112, 500, "on Google's GNM head", F(54), t, st + 0.25)
-    reveal(img, 112, 586, "Photoreal UV textures  ·  Natural eye motion  ·  Python control", F(26), t, st + 0.5,
+    reveal(img, 112, 500, "Eye Movement & Virtual Camera Rendering", F(46), t, st + 0.25)
+    reveal(img, 112, 586, "Photoreal eyes and skin  ·  Natural eye motion  ·  Python control", F(26), t, st + 0.5,
            GREY)
     t_team = wt("title", "team", 0, 3.5) - 0.3
     hline(img, 112, 112 + 520 * eout((t - t_team) / 0.9), 680, 1.0, HAIR)
@@ -953,7 +951,7 @@ def seg_textures(t, d):
     t_pores = wt("textures", "pores", 0, d * 0.7) - 0.3
     if t < t_eight + 0.5:
         a = 1 - fade(t, t_eight, 0.5)
-        headline(img, t, "01   Textures", "Painted on GNM's own UV map.")
+        headline(img, t, "01   Textures", "Painted on the head's own UV map.")
         a1 = eout((t - 0.3) / 0.9) * a
         card(img, uv_wire(620), 220, 236 + (1 - a1) * 30, 26, a1)
         text(img, 220, 880, "T03_albedo.1001.png   ·   4096 × 4096   ·   UDIM 1001", F(20, "mono"), GREY, a1)
@@ -961,7 +959,7 @@ def seg_textures(t, d):
         a2 = eout((t - 1.9) / 0.9) * a
         head = cover(load(tex_render(2, "front")), 620, 620, 0.5, 0.38)
         card(img, head, 1080, 236 + (1 - a2) * 30, 26, a2)
-        text(img, 1080, 880, "Wrapped straight onto the GNM head", F(22), GREY, a2)
+        text(img, 1080, 880, "Wrapped straight onto the head", F(22), GREY, a2)
         st = wt("textures", "seams", 0, 4) - 0.2
         pill(img, 1676, 262, "Seam-free", GREEN, fade(t, st, 0.35) * a, 22, anchor="r")
     if t >= t_eight:
@@ -980,7 +978,7 @@ def seg_textures(t, d):
                 scrim(img, x, y + ch - 90, cw, 90, 0.6)
             text(img, x + 20, y + ch - 42, TEX[i][0], F(20, "semibold"), FG, ai)
             text(img, x + 72, y + ch - 42, TEX[i][2], F(20), (210, 210, 215), ai)
-        text(img, W / 2, 836, "All 8 sets on one identical GNM head: the maps are interchangeable.", F(24), GREY, a,
+        text(img, W / 2, 836, "All 8 sets on one identical head: the maps are interchangeable.", F(24), GREY, a,
              anchor="m")
     if t >= t_pores:
         a = fade(t, t_pores, 0.5)
@@ -1090,7 +1088,7 @@ def seg_audit(t, d):
     a0 = eout((t - 0.2) / 0.9)
     card(img, load(rpath("quality_audit", "T03_uv_seams_overlay.png")).resize((640, 640), Image.LANCZOS), 120,
          236 + (1 - a0) * 30, 26, a0)
-    text(img, 120, 896, "Every UV seam on GNM's skin, in red", F(22), GREY, a0)
+    text(img, 120, 896, "Every UV seam on the skin, in red", F(22), GREY, a0)
     js = json.load(open(rpath("quality_audit", "seam_audit.json")))
     res = js["results"]
     x0 = 880
@@ -1214,7 +1212,7 @@ def seg_timeline(t, d):
             reveal(img, 80, 104, lab, F(56, "semibold"), ct, bt - 0.2, out=nxt - 0.55)
     x0, y0, pw = 1280, 64, 600
     panel(img, (x0, y0, x0 + pw, 910), 1.0, r=24, fill=(20, 20, 23), op=250)
-    eyebrow(img, x0 + 26, y0 + 24, "Timeline  ·  GNM_Rig", size=16)
+    eyebrow(img, x0 + 26, y0 + 24, "Timeline  ·  eye rig", size=16)
     text(img, x0 + pw - 26, y0 + 20, "315 frames", F(18), GREY, anchor="r")
     dd = ImageDraw.Draw(img)
     gx0, gx1 = x0 + 220, x0 + pw - 26
@@ -1263,14 +1261,14 @@ def seg_identity(t, d):
     put(img, cover(clip_frame("identity", t, 0.0, speed), 1300, 1080, 0.5, 0.4, fast=True), 0, 0)
     scrim(img, 0, 0, 1300, 260, 0.55, up=True)
     scrim(img, 0, 640, 1300, 440, 0.8)
-    eyebrow(img, 80, 66, "06   Face shape  ·  GNM identity sliders", col=(200, 200, 205))
+    eyebrow(img, 80, 66, "06   Face shape  ·  identity sliders", col=(200, 200, 205))
     st = wt("identity", "eyes", 0, 3) - 0.3
     reveal(img, 80, 104, "Change the face.", F(56, "semibold"), t, 0.4)
     reveal(img, 80, 770, "The eyes stay seated.", F(56, "semibold"), t, st)
     f = t * speed * FPS + 1
     x0, y0, pw = 1350, 150, 500
     panel(img, (x0, y0, x0 + pw, y0 + 650), 1.0, r=24, fill=(20, 20, 23), op=250)
-    eyebrow(img, x0 + 26, y0 + 26, "Shape keys  ·  GNM_Head", size=16)
+    eyebrow(img, x0 + 26, y0 + 26, "Shape keys  ·  head", size=16)
     for k in range(7):
         nm = f"ID_{k:02d}"
         v = id_value(nm, f)
@@ -1335,9 +1333,9 @@ def gnm_wire(size=700, col=(100, 210, 255)):
     return im
 
 
-ARCH = [("gnm", "GNM v3 in NumPy", "gnm_model.py", "Skinning, correctives, 253 identity components"),
-        ("expressions", "Expressions", "expressions.py", "Blink, wide, squint, brows solved in GNM's eye space"),
-        ("textures", "Textures", "textures.py  ·  iris_hq.py", "Baked in 3D through GNM's UVs, 4K iris per eye"),
+ARCH = [("head", "Head model in NumPy", "gnm_model.py", "Skinning, correctives, 253 identity components"),
+        ("expressions", "Expressions", "expressions.py", "Blink, wide, squint, brows solved in the model's eye space"),
+        ("textures", "Textures", "textures.py  ·  iris_hq.py", "Baked in 3D through the head's UVs, 4K iris per eye"),
         ("wrapper", "Control wrapper", "eyes.py  ·  eyes_cli.py", "look()  ·  eyelids()  ·  blink()  ·  render()")]
 
 
@@ -1346,7 +1344,14 @@ def seg_architecture(t, d):
     headline(img, t, "Architecture", "Under the hood.")
     aw = eout((t - 0.2) / 1.2)
     put(img, gnm_wire(660), 60, 250 + (1 - aw) * 30, aw)
-    text(img, 390, 912, "GNM head topology  ·  17,821 vertices", F(20), GREY, aw, anchor="m")
+    text(img, 390, 912, "Head topology  ·  17,821 vertices", F(20), GREY, aw, anchor="m")
+    # the one credit for the base mesh: a small card in the corner
+    ca = aw * 0.9
+    card_w, card_h = 330, 54
+    lay = Image.new("RGBA", (card_w, card_h), (0, 0, 0, 0))
+    put(img, rounded(Image.new("RGBA", (card_w, card_h), (22, 22, 26, 235)), 10), W - card_w - 40, H - card_h - 40, ca)
+    text(img, W - card_w - 24, H - card_h - 31, "Base head mesh: Google GNM v3", F(17, "medium"), (200, 200, 205), ca)
+    text(img, W - card_w - 24, H - card_h - 9, "Apache-2.0  ·  everything else built by us", F(14), GREY, ca)
     times = [wt("architecture", k, 0, 1 + 2 * i) for i, (k, _, _, _) in enumerate(ARCH)]
     active = max([i for i, st in enumerate(times) if t >= st - 0.3] or [-1])
     x, x1 = 820, 1800
@@ -1372,7 +1377,7 @@ def seg_compare(t, d):
     img = canvas()
     headline(img, t, "Comparison", "Compared with today's tools.")
     cols = [("Head models", "FLAME · GNM as released"), ("Eye tools", "SynthesEyes · UnityEyes"),
-            ("Ours", "GNM + textures + motion")]
+            ("Ours", "textures + eyes + motion")]
     xs = [1010, 1340, 1670]
     y0 = 380
     ah = eout((t - 0.4) / 0.9)
@@ -1410,7 +1415,7 @@ def seg_novelty(t, d):
     eyebrow(img, W / 2, 70, "Novelty & applications", t, 0.1, anchor="m")
     reveal(img, W / 2, 106, "Photoreal textures. Eye kinematics. Python control.", F(52, "semibold"), t, 0.2,
            anchor="m")
-    reveal(img, W / 2, 182, "All native to GNM.", F(52, "semibold"), t, 0.45, anchor="m", grad=GRAD)
+    reveal(img, W / 2, 182, "Built brick by brick.", F(52, "semibold"), t, 0.45, anchor="m", grad=GRAD)
     cw, ch, g = 400, 470, 26
     x0 = (W - 4 * cw - 3 * g) // 2
     for k, (w_, clip, c0, cy, lab, sub) in enumerate(NOV):
@@ -1480,18 +1485,13 @@ def seg_outro(t, d, team, repo, emails):
     put(img, bl, 0, 0, 0.35)
     put(img, glow_disc(1400, (60, 90, 200), 0.18), W / 2 - 700, -300)
     reveal(img, W / 2, 150, "Synthetic Eyes", F(120, "semibold"), t, 0.2, grad=GRAD, anchor="m", dur=1.0)
-    reveal(img, W / 2, 318, "on Google's GNM head", F(44), t, 0.45, anchor="m")
-    t_c = wt("outro", "code", 0, 1.5)
-    eyebrow(img, W / 2, 430, "For the code or further development", t, t_c - 0.4, anchor="m")
-    reveal(img, W / 2, 470, "    ·    ".join(emails), F(38, "medium"), t, t_c - 0.2, anchor="m")
-    reveal(img, W / 2, 536, repo, F(24, "mono"), t, t_c, GREY, anchor="m")
-    t_th = wt("outro", "thank", 0, d - 2.5)
-    hline(img, W / 2 - 260 * eout((t - t_th + 1.1) / 0.9), W / 2 + 260 * eout((t - t_th + 1.1) / 0.9), 630, 1.0,
-          HAIR)
-    reveal(img, W / 2, 664, team[0], F(44, "semibold"), t, t_th - 1.0, anchor="m")
-    reveal(img, W / 2, 724, team[1], F(26), t, t_th - 0.85, GREY, anchor="m")
-    reveal(img, W / 2, 766, team[2], F(24), t, t_th - 0.7, GREY, anchor="m")
-    reveal(img, W / 2, 836, "Thank you.", F(40, "semibold"), t, t_th, anchor="m")
+    reveal(img, W / 2, 318, "Eye Movement & Virtual Camera Rendering", F(40), t, 0.45, anchor="m")
+    hline(img, W / 2 - 260 * eout((t - 0.9) / 0.9), W / 2 + 260 * eout((t - 0.9) / 0.9), 480, 1.0, HAIR)
+    reveal(img, W / 2, 530, team[0], F(52, "semibold"), t, 1.0, anchor="m")
+    reveal(img, W / 2, 600, team[1], F(30), t, 1.2, GREY, anchor="m")
+    reveal(img, W / 2, 648, team[2], F(26), t, 1.35, GREY, anchor="m")
+    t_th = wt("outro", "thank", 0, 1.8)
+    reveal(img, W / 2, 770, "Thank you.", F(48, "semibold"), t, max(1.6, t_th), anchor="m")
     return img
 
 

@@ -1,9 +1,9 @@
-# Synthetic Eye Movement & Virtual Camera Rendering on GNM
+# Synthetic Eyes: Eye Movement & Virtual Camera Rendering
 
 **Samsung XR Hackathon 2026, Track 1 (XR Perception Group)**<br>
 Team **SRMIST_Rocklef**: Sree Rohith Balaji and Thackshanaramana, SRM Institute of Science and Technology
 
-A textured, articulatable **GNM v3** head in Blender whose eyeballs rotate in 3D about their own centres, converge on a
+Photoreal synthetic eyes built brick by brick in Blender: a textured, articulatable head whose eyeballs rotate in 3D about their own centres, converge on a
 fixation target 35 cm ahead, and are rendered by a camera locked 40 cm ahead, with per-frame ground truth.
 
 ![Ten clockwise renders and the five-direction check](quality_audit/gate0/contact_sheet.png)
@@ -66,7 +66,7 @@ docker run --rm -v "$PWD/out:/out" rocklef-gaze        # renders the 10 frames +
 
 Beyond the required output, the head is built for photorealism:
 
-- **8 photoreal texture sets** on GNM's UV layout (skin, separate left and right irises, teeth), seam-free by
+- **8 photoreal texture sets** on the head's UV layout (skin, separate left and right irises, teeth), seam-free by
   construction: [`textures/`](textures/), renders in [`renders_textures/`](renders_textures/), seam audit in
   [`quality_audit/`](quality_audit/README.md).
 - **3D hair**: head hair, brows, lashes, stubble and fine facial hair, all bound so nothing drags across the eye.
@@ -76,7 +76,7 @@ Beyond the required output, the head is built for photorealism:
 - **An expression on the Blender Timeline**: [`gnm_expression_timeline.blend`](gnm_expression_timeline.blend)
   (eyelids, pupils, brows and gaze; open it and press Play).
 - **A richer control wrapper** for the full rig: [`eyes.py`](eyes.py) (gaze, eyelids, blinks, pupils, brows and
-  20 GNM identity sliders).
+  20 identity sliders).
 
 How everything is built: [`docs/DETAILS.md`](docs/DETAILS.md).
 
@@ -95,6 +95,6 @@ How everything is built: [`docs/DETAILS.md`](docs/DETAILS.md).
 
 ## Credits and licences
 
-- **GNM v3** head model, identity decoder and UV layout: Google, Apache-2.0 ([github.com/google/GNM](https://github.com/google/GNM)).
+- Base head mesh, identity decoder and UV layout: Google GNM v3, Apache-2.0 ([github.com/google/GNM](https://github.com/google/GNM)). Everything else (textures, eyes, hair, rig, expressions, motion, wrapper, verification, renders) was built by Team Rocklef.
 - All textures, rig, expressions, motion and rendering code here were written for this submission.
 - Studio lighting HDRI: Blender's bundled `interior.exr` (CC0).

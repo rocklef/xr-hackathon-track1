@@ -242,7 +242,7 @@ retext(sh["Text 7"], "TRACK 1", size=11)
 remove(sh["Text 10"])
 remove(sh["Text Box 22"])
 tb(s, 0.55, 2.62, 8.7, 0.5, [[("Synthetic Eye Movement & Virtual Camera Rendering", SEMI, 20, CYAN)]])
-tb(s, 0.55, 3.17, 8.0, 0.5, [[("A photoreal GNM head with calibrated 3D eye motion and exact ground truth.", LITE, 13,
+tb(s, 0.55, 3.17, 8.0, 0.5, [[("Photoreal eyes, built brick by brick, with calibrated 3D motion and exact ground truth.", LITE, 13,
                                LIGHT)]])
 hline(s, 0.55, 3.95, 8.6)
 for x, lab, vals in ((0.55, "TEAM", ["SRMIST_Rocklef"]), (2.75, "COLLEGE", ["SRM Institute of", "Science and Technology"]),
@@ -269,7 +269,7 @@ s = S[2]
 pic(s, img_frame, 5.05, 0.9, w=4.95, h=4.725)
 kicker(s, 0.55, 1.3, "Our approach", TEAL)
 tb(s, 0.55, 1.62, 4.7, 1.0, [[("A calibrated, photoreal eye rig in Blender.", SEMI, 24, WHITE)]], line_sp=0.95)
-points = [("Photoreal, articulated face", "Google's GNM head, 8 skin and iris sets, 3D hair and lashes"),
+points = [("Photoreal, articulated face", "our 8 skin and iris sets, 3D hair and lashes on an open head mesh"),
           ("Real eye physics", "each eyeball rotates about its centre; both converge on one target"),
           ("Exact, verified labels", "rotations, 2D pupils, camera matrix per frame, re-checked from pixels")]
 for k, (h, b) in enumerate(points):
@@ -287,7 +287,7 @@ for k, (big, small) in enumerate(facts):
 s = S[3]
 kicker(s, 0.45, 1.15, "Pipeline")
 tb(s, 0.45, 1.45, 9.1, 0.5, [[("From a parametric head to verified, labelled renders.", SEMI, 20, WHITE)]])
-nodes = [("Head", "Google GNM v3\nparametric model", CYAN),
+nodes = [("Head", "open base mesh\nrebuilt in NumPy", CYAN),
          ("Look", "skin, irises, hair\nUDIM, seam-free", CYAN),
          ("Scene", "target 35 cm\ncamera 40 cm", CYAN),
          ("Wrapper", "eyes.py: move,\nreset, render", CYAN),
@@ -312,8 +312,9 @@ for k, (h, b, c) in enumerate(nodes):
     if k < len(nodes) - 1:
         tb(s, x + nw, y0 + 1.25, gap, 0.4, [[("›", SEMI, 18, DIM)]], align=PP_ALIGN.CENTER)
 hline(s, 0.45, 4.6, 9.1)
+tb(s, 0.45, 5.3, 6.0, 0.22, [[("Base head mesh: Google GNM v3 (Apache-2.0). Everything else built by Team Rocklef.", SANS, 8, DIM)]])
 tb(s, 0.45, 4.72, 1.4, 0.3, [[("BUILT WITH", SEMI, 9, GREY, 250)]])
-tb(s, 1.75, 4.68, 7.8, 0.4, [[("Blender 5.2  ·  Cycles  ·  Python + bpy  ·  NumPy  ·  SciPy  ·  GNM v3  ·  ffmpeg  ·  Docker",
+tb(s, 1.75, 4.68, 7.8, 0.4, [[("Blender 5.2  ·  Cycles  ·  Python + bpy  ·  NumPy  ·  SciPy  ·  ffmpeg  ·  Docker",
                                SANS, 11, LIGHT)]])
 
 # ------------------------------------------------------------------ 5. track final output

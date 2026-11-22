@@ -25,12 +25,12 @@ SCRIPT = {
     "problem": "Every one of these systems has to learn from real faces, with eyes that move like real eyes. "
                "Filming people is slow, expensive and private. And most digital eyes look dead: glassy, staring "
                "and robotic.",
-    "title": "This is Synthetic Eyes, built on Google's GNM head, by Team Rocklef from SRM Institute of Science "
-             "and Technology.",
+    "title": "This is Synthetic Eyes: eye movement and virtual camera rendering, built brick by brick by Team "
+             "Rocklef from SRM Institute of Science and Technology.",
     "literature": "Researchers built 3D head models like FLAME and GNM, and eye tools like UnityEyes. But the head "
                   "models come without lifelike skin or eyes, and the eye tools only show the eye.",
-    "solution": "So we gave GNM photoreal skin, living eyes and natural motion, all driven by one Python script.",
-    "textures": "Every texture is painted straight onto GNM's own UV map, so it wraps onto the head with no "
+    "solution": "So we built photoreal skin, living eyes and natural motion, all driven by one Python script.",
+    "textures": "Every texture is painted straight onto the head's own UV map, so it wraps on with no "
                 "seams. Eight faces, of different ages and backgrounds, with pores, freckles, wrinkles, and "
                 "eyebrows drawn hair by hair.",
     "iris": "Each eye gets its own 4K iris, with fibres, crypts and a ring of colour, and a pupil that really "
@@ -42,8 +42,8 @@ SCRIPT = {
               "follows a little, and the eyelids follow the eyes.",
     "timeline": "The blend file plays a whole expression on Blender's timeline: surprise, a suspicious squint and "
                 "an eye roll, with eyelids, pupils and brows moving together.",
-    "identity": "Change the face with GNM's own shape sliders, and the eyes stay perfectly in place.",
-    "architecture": "Under the hood: GNM rebuilt in Python, expressions solved inside GNM's own eye space, "
+    "identity": "Change the face with shape sliders, and the eyes stay perfectly in place.",
+    "architecture": "Under the hood: the head model rebuilt in Python, expressions solved inside its own eye space, "
                     "textures baked through its UV map, and a control wrapper to look, open the eyelids and "
                     "blink.",
     "compare": "Compared with today's tools, ours gives a whole photoreal face, a separate iris for each eye, "
@@ -51,7 +51,7 @@ SCRIPT = {
     "novelty": "That opens the door to lifelike avatars, safer cars, better eye trackers, and medical research.",
     "future": "Next, we'll carry the textures over to FLAME, add infrared headset cameras, and run it all in real "
               "time.",
-    "outro": "Want the code, or to build on it? Email us. Thank you, from Team Rocklef.",
+    "outro": "Thank you, from Team Rocklef.",
 }
 
 
