@@ -269,18 +269,19 @@ s = S[2]
 pic(s, img_frame, 5.05, 0.9, w=4.95, h=4.725)
 kicker(s, 0.55, 1.3, "Our approach", TEAL)
 tb(s, 0.55, 1.62, 4.7, 1.0, [[("A calibrated, photoreal eye rig in Blender.", SEMI, 24, WHITE)]], line_sp=0.95)
-rect(s, 0.55, 2.72, 4.3, 1.05, RGBColor(0x06, 0x09, 0x12), line=LINE, round_=0.06)
-tb(s, 0.78, 2.84, 4.0, 0.9, [P(("eyes.", MONO, 13, GREY), ("move", MONO, 13, TEAL), ("(h, v)", MONO, 13, WHITE),
-                                ("   # h, v in [-1, +1]", MONO, 10, DIM), after=3),
-                              P(("eyes.", MONO, 13, GREY), ("reset", MONO, 13, TEAL), ("()", MONO, 13, WHITE), after=3),
-                              P(("eyes.", MONO, 13, GREY), ("render", MONO, 13, TEAL), ("()", MONO, 13, WHITE),
-                                ("     # PNG + labels", MONO, 10, DIM))])
+points = [("Photoreal, articulated face", "Google's GNM head, 8 skin and iris sets, 3D hair and lashes"),
+          ("Real eye physics", "each eyeball rotates about its centre; both converge on one target"),
+          ("Exact, verified labels", "rotations, 2D pupils, camera matrix per frame, re-checked from pixels")]
+for k, (h, b) in enumerate(points):
+    y = 2.6 + k * 0.52
+    rect(s, 0.55, y + 0.05, 0.05, 0.38, TEAL)
+    tb(s, 0.75, y, 4.1, 0.5, [P((h, SEMI, 12, WHITE), after=1), P((b, SANS, 9.5, GREY))])
 facts = [("3D", "eyeball rotation\nabout each centre"), ("35 cm", "fixation target,\n±5 cm motion"),
          ("40 cm", "locked camera,\n1024 × 1024 PNG")]
 for k, (big, small) in enumerate(facts):
     x = 0.55 + k * 1.5
-    tb(s, x, 4.05, 1.45, 0.45, [[(big, SEMI, 22, TEAL)]])
-    tb(s, x, 4.55, 1.45, 0.6, [P((l, SANS, 9.5, GREY)) for l in small.split("\n")])
+    tb(s, x, 4.32, 1.45, 0.45, [[(big, SEMI, 22, TEAL)]])
+    tb(s, x, 4.8, 1.45, 0.6, [P((l, SANS, 9.5, GREY)) for l in small.split("\n")])
 
 # ------------------------------------------------------------------ 4. architecture
 s = S[3]
