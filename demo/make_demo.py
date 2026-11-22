@@ -675,11 +675,11 @@ def headline(img, t, eb, line, st=0.15, x=120, y=78, size=56, grad=None):
 APPS = [dict(clip="app_vr", word=("headset", 0), eb="Virtual reality", head="Sharp only where you look.",
              want=1.0, cy=0.35),
         dict(clip="app_car", word=("car", 0), eb="Driver monitoring", head="Eyes leave the road. It warns.",
-             want=3.6, cy=0.4),
+             want=1.5, cy=0.4),
         dict(clip="app_access", word=("people", 0), eb="Eye typing", head="A keyboard for the eyes.",
-             want=4.0, cy=0.5),
+             want=2.5, cy=0.5),
         dict(clip="app_medical", word=("and", 0), eb="Early screening", head="Gaze helps spot autism early.",
-             want=0.9, cy=0.4)]
+             want=0.6, cy=0.4)]
 CW, CH, CG = 800, 450, 24
 GX, GY = (W - 2 * CW - CG) // 2, 66
 ZOOM = 0.8
