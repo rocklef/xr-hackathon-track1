@@ -257,8 +257,8 @@ kicker(s, 0.55, 1.3, "Why synthetic eyes")
 tb(s, 0.55, 1.62, 4.6, 1.3, [[("Gaze AI needs millions of labelled eyes.", SEMI, 24, WHITE)]], line_sp=0.95)
 tb(s, 0.55, 2.72, 4.1, 0.7, [[("Real capture can't supply them, and flat pupil fakes look wrong.", LITE, 13, LIGHT)]])
 pts = [("Slow and costly", "every angle, every face, recorded by hand", CYAN),
-       ("Privacy-bound", "eyes and faces are biometric data", BLUE),
-       ("Never exactly labelled", "the true gaze in real footage is unknown", ORANGE)]
+       ("Privacy-bound", "eyes and faces are biometric data", CYAN),
+       ("Never exactly labelled", "the true gaze in real footage is unknown", CYAN)]
 for k, (h, b, c) in enumerate(pts):
     y = 3.55 + k * 0.6
     rect(s, 0.55, y + 0.06, 0.06, 0.38, c)
@@ -288,10 +288,10 @@ kicker(s, 0.45, 1.15, "Pipeline")
 tb(s, 0.45, 1.45, 9.1, 0.5, [[("From a parametric head to verified, labelled renders.", SEMI, 20, WHITE)]])
 nodes = [("Head", "Google GNM v3\nparametric model", CYAN),
          ("Look", "skin, irises, hair\nUDIM, seam-free", CYAN),
-         ("Scene", "target 35 cm\ncamera 40 cm", BLUE),
-         ("Wrapper", "eyes.py: move,\nreset, render", ORANGE),
-         ("Output", "1024² PNG + JSON\npupils, rotations", ORANGE),
-         ("Verifier", "labels re-checked\nfrom the pixels", GREEN)]
+         ("Scene", "target 35 cm\ncamera 40 cm", CYAN),
+         ("Wrapper", "eyes.py: move,\nreset, render", CYAN),
+         ("Output", "1024² PNG + JSON\npupils, rotations", CYAN),
+         ("Verifier", "labels re-checked\nfrom the pixels", CYAN)]
 nw, gap, y0 = 1.36, 0.19, 2.05
 thumbs = ["head", "look", "scene", None, "output", "verify"]
 for k, (h, b, c) in enumerate(nodes):
@@ -442,46 +442,37 @@ new = ids[-1]
 ids.remove(new)
 ids.insert(6, new)                                               # right after Differentiation
 
-kicker(s, 0.45, 1.15, "Proposed novel research contribution & future scope", TEAL)
-tb(s, 0.45, 1.45, 9.1, 0.5, [[("Self-verifying, refraction-aware gaze labels for near-field XR.", SEMI, 19, WHITE)]])
-steps = [("Research gap", CYAN,
-          "Synthetic gaze data labels the geometric pupil and trusts the renderer [1]. Corneal refraction shifts the "
-          "visible pupil [3]; realism refiners can shift it further [2, 4]. Labels are rarely re-checked against "
-          "the pixels."),
-         ("Proposed layer", TEAL,
-          "A closed-loop verifier on top of our rig: every rendered frame's ground truth is re-measured from its own "
-          "pixels before it enters a dataset."),
-         ("Mechanism", BLUE,
-          "Project the geometric pupil through K[R|t]; detect the apparent pupil with an occlusion-robust circle fit; "
-          "store both, their offset and a per-frame confidence; re-render or reject frames beyond tolerance."),
-         ("New applications", ORANGE,
-          "Confidence-weighted training of XR gaze trackers; a test bed for refraction-aware eye models; auditing "
-          "sim-to-real refiners and neural gaze redirection for label drift; near-field foveation studies."),
-         ("Expected impact", GREEN,
-          "Cleaner synthetic data where label error hurts most: near-eye views and large vergence angles. To our "
-          "knowledge no synthetic gaze pipeline publishes per-frame, pixel-verified labels; a full prior-art review "
-          "is future work.")]
-cw, cg, cy = 1.7, (9.1 - 5 * 1.7) / 4, 2.1
-for k, (h, c, body) in enumerate(steps):
-    x = 0.45 + k * (cw + cg)
-    rect(s, x, cy, cw, 0.04, c)
-    tb(s, x, cy + 0.14, cw, 0.25, [[(f"0{k + 1}", SEMI, 9, c, 100)]])
-    tb(s, x, cy + 0.36, cw, 0.3, [[(h, SEMI, 12.5, WHITE)]])
-    tb(s, x, cy + 0.72, cw, 1.75, [[(body, SANS, 9, LIGHT)]], line_sp=1.05)
-    if k < 4:
-        tb(s, x + cw, cy + 0.3, cg, 0.35, [[("›", SEMI, 16, DIM)]], align=PP_ALIGN.CENTER)
-rect(s, 0.45, 4.38, 9.1, 0.5, PANEL)
-tb(s, 0.6, 4.38, 8.9, 0.5, [[("Built and measured: ", SEMI, 9.5, GREEN),
-                             ("verifier on 20 pupils, mean 0.96 px, max 1.92 px.   ", SANS, 9.5, WHITE),
-                             ("Not yet measured: ", SEMI, 9.5, ORANGE),
-                             ("effect on gaze-estimator accuracy (planned: train on raw vs verified labels, test on "
-                              "real near-eye data).", SANS, 9.5, WHITE)]], anchor=MSO_ANCHOR.MIDDLE)
-tb(s, 0.45, 4.98, 8.3, 0.5, [[("[1] Wood et al., Learning an appearance-based gaze estimator from one million synthesised "
-                               "images, ETRA 2016.  [2] Shrivastava et al., Learning from simulated and unsupervised "
-                               "images through adversarial training, CVPR 2017.  [3] Dierkes, Kassner & Bulling, A fast "
-                               "approach to refraction-aware eye-model fitting and gaze prediction, ETRA 2019.  "
-                               "[4] Ruzzi et al., GazeNeRF: 3D-aware gaze redirection with neural radiance fields, "
-                               "CVPR 2023.", SANS, 7, DIM)]])
+A = TEAL                                                       # one accent colour on this slide
+kicker(s, 0.45, 1.15, "Novel contribution · future scope", A)
+tb(s, 0.45, 1.48, 3.9, 1.5, [P((l, SEMI, 21, WHITE)) for l in ("Self-verifying,", "refraction-aware", "gaze labels for", "near-field XR.")],
+   line_sp=0.92)
+tb(s, 0.45, 2.95, 3.6, 0.6, [[("Every frame's ground truth is re-measured from its own pixels before it enters a "
+                               "dataset.", LITE, 11.5, LIGHT)]])
+hline(s, 0.45, 3.72, 3.6)
+tb(s, 0.45, 3.85, 3.6, 0.25, [[("BUILT AND MEASURED", SEMI, 8.5, GREY, 200)]])
+tb(s, 0.45, 4.08, 3.6, 0.5, [[("0.96 px", SEMI, 26, A), ("   mean label error", SANS, 10.5, LIGHT)]])
+tb(s, 0.45, 4.62, 3.6, 0.3, [[("1.92 px max  ·  20 pupils  ·  10 frames", SANS, 9.5, GREY)]])
+tb(s, 0.45, 4.92, 3.6, 0.45, [[("Next to measure: gaze-estimator accuracy, trained on raw vs verified labels.", SANS,
+                                9, DIM)]])
+steps = [("Research gap", "Synthetic gaze data trusts the renderer's geometric pupil [1]; corneal refraction [3] and "
+                          "realism refiners [2, 4] shift the pupil the camera actually sees."),
+         ("Proposed layer", "A closed-loop verifier on top of our calibrated rig, compatible with any Blender scene."),
+         ("Mechanism", "Project the 3D pupil through K[R|t], detect the visible pupil with an occlusion-robust circle "
+                       "fit, store both plus a confidence; reject or re-render outliers."),
+         ("New applications", "Confidence-weighted XR tracker training, refraction-aware model benchmarks, auditing "
+                              "sim-to-real refiners for label drift."),
+         ("Expected impact", "Cleaner labels where errors hurt most: near-eye views and large vergence. To our "
+                             "knowledge unpublished elsewhere; a full prior-art review is future work.")]
+x0, rw, ry, rh = 4.55, 5.0, 1.42, 0.74
+for k, (h, body) in enumerate(steps):
+    y = ry + k * rh
+    if k:
+        hline(s, x0, y - 0.04, rw)
+    tb(s, x0, y + 0.05, 0.45, 0.3, [[(f"0{k + 1}", SEMI, 11, A)]])
+    tb(s, x0 + 0.5, y + 0.03, rw - 0.5, 0.3, [[(h, SEMI, 12, WHITE)]])
+    tb(s, x0 + 0.5, y + 0.3, rw - 0.5, 0.42, [[(body, SANS, 9, GREY)]], line_sp=1.0)
+tb(s, 0.45, 5.33, 8.3, 0.25, [[("[1] Wood et al., ETRA 2016   [2] Shrivastava et al., CVPR 2017   [3] Dierkes, Kassner & "
+                                "Bulling, ETRA 2019   [4] Ruzzi et al., GazeNeRF, CVPR 2023", SANS, 7.5, DIM)]])
 
 S = prs.slides
 n = len(S)
