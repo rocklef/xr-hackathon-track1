@@ -29,6 +29,18 @@ Slide 1 deliverables:
 | Separate left and right iris maps | UDIM tiles 1002 (left) and 1004 (right) in every set |
 | Quality audit for seams and artefacts | [`quality_audit/`](quality_audit/README.md): every set passes |
 
+## Submission checklist
+
+| Item | Where |
+|---|---|
+| Submission package (as per the theme slides) | the deliverables in the tables above |
+| Source code | [`render_textures.py`](render_textures.py), [`eyes_cli.py`](eyes_cli.py), [`eyes.py`](eyes.py), [`gnm_rig/`](gnm_rig/), [`tools/`](tools/) |
+| Presentation | [`presentation/`](presentation/) |
+| Video | demo: [`demo/SRMIST_Rocklef_demo.mp4`](demo/SRMIST_Rocklef_demo.mp4) (2 min 43 s); rubric videos: [`renders_eyes_cli/`](renders_eyes_cli/) |
+| AI disclosure | [`AI_DISCLOSURE.md`](AI_DISCLOSURE.md) |
+| README | this file; technical details in [`docs/DETAILS.md`](docs/DETAILS.md) |
+| APK / SDK | not applicable (no app). The Python control wrapper [`eyes.py`](eyes.py) is the programmable interface; [`Dockerfile`](Dockerfile) runs everything headless |
+
 ## Run it
 
 Needs Blender 5.2 LTS (or 5.3), Python 3.10+ and ffmpeg. Run from the repository root.
