@@ -78,6 +78,21 @@ Beyond the required output, the head is built for photorealism:
 - **A richer control wrapper** for the full rig: [`eyes.py`](eyes.py) (gaze, eyelids, blinks, pupils, brows and
   20 identity sliders).
 
+- **Application scenes** where synthetic eyes matter, rendered in Blender with the same eye rig:
+  VR foveated rendering, driver monitoring, eye typing and early autism screening.
+
+Every scene of the demo is also available as its own clip in [`demo/clips/`](demo/clips/):
+
+| Clip | Shows |
+|---|---|
+| [`app_vr.mp4`](demo/clips/app_vr.mp4) | Virtual reality: a headset sharpens only where the user looks |
+| [`app_car.mp4`](demo/clips/app_car.mp4) | Driver monitoring: the car warns when the driver's eyes leave the road |
+| [`app_access.mp4`](demo/clips/app_access.mp4) | Eye typing: a person who can't speak types "HELLO SAM" with their eyes |
+| [`app_medical.mp4`](demo/clips/app_medical.mp4) | Early screening: a child's gaze on a screen game |
+| [`orbit.mp4`](demo/clips/orbit.mp4) | The textured head with hair, turning in studio light |
+| [`identity.mp4`](demo/clips/identity.mp4) | Face-shape sliders changing the face while the eyes stay seated |
+| [`timeline.mp4`](demo/clips/timeline.mp4) | The Timeline expression: surprise, squint, eye-roll, blink |
+
 How everything is built: [`docs/DETAILS.md`](docs/DETAILS.md).
 
 ## Submission checklist
@@ -87,7 +102,7 @@ How everything is built: [`docs/DETAILS.md`](docs/DETAILS.md).
 | Submission package (as per the theme slides) | [`SRMIST_Rocklef.zip`](SRMIST_Rocklef.zip) |
 | Source code | [`bundle/wrapper/`](bundle/wrapper/), [`tools/`](tools/), [`gnm_rig/`](gnm_rig/), [`eyes_cli.py`](eyes_cli.py), [`eyes.py`](eyes.py), [`render_textures.py`](render_textures.py) |
 | Presentation | [`presentation/SRMIST_Rocklef.pptx`](presentation/SRMIST_Rocklef.pptx) |
-| Video | [`demo/SRMIST_Rocklef_demo.mp4`](demo/SRMIST_Rocklef_demo.mp4) (under 3 min) |
+| Video | [`demo/SRMIST_Rocklef_demo.mp4`](demo/SRMIST_Rocklef_demo.mp4) (2:56); every scene separately in [`demo/clips/`](demo/clips/) |
 | AI disclosure | [`AI_DISCLOSURE.md`](AI_DISCLOSURE.md) |
 | README | this file, [`bundle/README.md`](bundle/README.md), [`docs/DETAILS.md`](docs/DETAILS.md) |
 | Docker and requirements | [`Dockerfile`](Dockerfile), [`requirements.txt`](requirements.txt) |
