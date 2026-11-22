@@ -1,4 +1,4 @@
-# Team Rocklef: Track 1 gaze rig (GNM head)
+# Synthetic Eyes: Track 1 bundle (Team Rocklef)
 
 Samsung XR Hackathon 2026, Track 1: synthetic eye movement and virtual camera rendering in Blender.
 SRM Institute of Science and Technology.

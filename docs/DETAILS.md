@@ -132,11 +132,12 @@ The rig exposes keyframeable controls on `GNM_Rig`: `blink_L`, `blink_R`, `wide`
 
 ## Demo video: `demo/SRMIST_Rocklef_demo.mp4`
 
-A narrated walkthrough (about 2 min 45 s, 1080p): why eyes matter, the problem, related work, our textures,
+A narrated walkthrough (2 min 56 s, 1080p): why eyes matter, the problem, related work, our textures,
 the seam audit, the three motion inputs, the Timeline expression, face-shape sliders, architecture, comparison,
 applications and next steps. Every result shown is the GNM head from this repository. The four application scenes
 (VR headset, driver monitoring, eye typing, early autism screening) reuse the characters from our earlier work in
-`legacy/` and need its rendered frames in `legacy/video/build/app_*`.
+`legacy/`; `tools/render_app_scene.py` re-renders them into `legacy/video/build/app_*`, and the finished
+scenes are in `demo/clips/`.
 
 ```bash
 python demo/narration.py                                     # voiceover + word timings
